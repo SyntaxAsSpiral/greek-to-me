@@ -14,11 +14,12 @@ test('unclosed fence (streaming) is transliterated to the end', () => {
   expect(greekify('```\nab', map, keep)).toBe('```\nαβ')
 })
 
-test('quenya: tehta rides the next consonant, carrier at word end', () => {
-  // "tal": tinco, lambe + a-tehta ; "ta": tinco, carrier + a-tehta
-  expect(quenya('tal')).toBe('\u{F5100}\u{F5132}\u{F5140}')
-  expect(quenya('ta')).toBe('\u{F5100}\u{F512C}\u{F5140}')
-  expect(quenya('a_b')).toBe('\u{F512C}\u{F5140}_\u{F5105}')
+test('quenya: the vowel joins the NEXT consonant as one character, a carrier syllable at word end', () => {
+  // tal: tinco, then lambe+a as ONE character (letter 20 of 22, vowel a: U+F5200 + 5*20)
+  expect(quenya('tal')).toBe('\u{F5100}\u{F5264}')
+  // ta: tinco, then the carrier+a syllable (carrier is letter 21)
+  expect(quenya('ta')).toBe('\u{F5100}\u{F5269}')
+  expect(quenya('a_b')).toBe('\u{F5269}_\u{F5105}')
 })
 
 test('maya: stable per character, case-folded, punctuation kept', () => {
@@ -59,11 +60,12 @@ test('group preview puts a command in the script and leaves other calls readable
   expect(groupPreview({ tool: 'Grep', input: { pattern: 'foo' } }, tf)).toEqual(['foo'])
 })
 
-test('tengwar: a vowel sits on the consonant before it, a carrier when none does', () => {
-  expect(tengwar('ta')).toBe('\u{F5100}\u{F5140}') // tinco with an a-tehta
-  expect(tengwar('at')).toBe('\u{F512C}\u{F5140}\u{F5100}') // carrier with a-tehta, then tinco
-  expect(tengwar('tal')).toBe('\u{F5100}\u{F5140}\u{F5132}') // the tehta stays on the t, then lambe
-  expect(tengwar('t_a')).toBe('\u{F5100}_\u{F512C}\u{F5140}') // other characters break the attachment
+test('tengwar: the vowel joins the consonant BEFORE it as one character, a carrier syllable when none', () => {
+  expect(tengwar('ta')).toBe('\u{F5200}') // tinco+a, one cell
+  expect(tengwar('at')).toBe('\u{F5269}\u{F5100}') // carrier+a, then tinco
+  expect(tengwar('tal')).toBe('\u{F5200}\u{F5132}') // tinco+a, then lambe
+  expect(tengwar('t_a')).toBe('\u{F5100}_\u{F5269}') // a break: the vowel takes a carrier
+  expect([...tengwar('tale')].length).toBe(2) // two syllables, two cells
 })
 
 test('hebrew and katakana: every letter maps, case folds, and katakana stays one cell wide', () => {

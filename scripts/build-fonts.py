@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Build the two private-use fonts the aurebesh and quenya scripts draw from.
+"""Build AurebeshPUA.otf, the private-use font the aurebesh script draws from.
 
-usage: build-fonts.py AUREBESH.otf UNIFONT_CSUR.otf OUTDIR
+usage: build-fonts.py AUREBESH.otf OUTDIR
 
 AurebeshPUA.otf  Aurebesh glyphs also at U+F5000 + ASCII (aurebesh)
-TengwarPUA.otf   Unifont CSUR Tengwar (U+E000..E07F) also at U+F5100.. (quenya)
 
-Both sit in plane 15 so Nerd Font icons, which own U+E000 and U+EA00, cannot
+It sits in plane 15 so Nerd Font icons, which own U+E000 and U+EA00, cannot
 shadow them. Needs fontTools: nix shell nixpkgs#python3Packages.fonttools -c python3 ...
 """
 import sys, os
@@ -37,7 +36,6 @@ def build(src, out, mapping, family):
 
 
 if __name__ == "__main__":
-    aure, csur, out = sys.argv[1:4]
+    aure, out = sys.argv[1:3]
     os.makedirs(out, exist_ok=True)
     build(aure, f"{out}/AurebeshPUA.otf", {0xF5000 + o: o for o in range(0x21, 0x7F)}, "Aurebesh PUA")
-    build(csur, f"{out}/TengwarPUA.otf", {0xF5100 + i: 0xE000 + i for i in range(0x80)}, "Tengwar PUA")

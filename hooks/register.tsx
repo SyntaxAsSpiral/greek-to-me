@@ -87,12 +87,27 @@ const CARRIER = 0xe02c
 // assets/TengwarPUA.otf: the same glyphs moved to U+F5100 + (cp - U+E000).
 const T = (...cps: number[]): string => String.fromCodePoint(...cps.map(c => c - 0xe000 + 0xf5100))
 
+// A vowel is a tiny mark with no width, which a terminal still gives a cell of its own, so each letter with
+// its vowel is one precomposed character instead: U+F5200 + 5 * (the letter's place in TENGWAR_LETTERS) + the
+// vowel's place in aeiou. scripts/build-tengwar.py draws them, and reads this very list.
+const TENGWAR_LETTERS = [
+  0xe000, 0xe001, 0xe002, 0xe003, 0xe004, 0xe005, 0xe006, 0xe008, 0xe009, 0xe00a, 0xe00b, 0xe010, 0xe011, 0xe015,
+  0xe017, 0xe020, 0xe021, 0xe024, 0xe026, 0xe030, 0xe032, 0xe02c,
+]
+const syllable = (letter: number, vowel: string): string =>
+  String.fromCodePoint(0xf5200 + TENGWAR_LETTERS.indexOf(letter) * 5 + 'aeiou'.indexOf(vowel))
+
+// Quenya: a vowel is a tehta on the NEXT consonant, or on a short carrier when no consonant follows it.
 const quenya: Transform = line => {
   const out: string[] = []
   const s = line.toLowerCase()
   let pending: string | null = null
   const flush = () => {
-    if (pending) out.push(T(CARRIER, Q_VOWELS[pending]!))
+    if (pending) out.push(syllable(CARRIER, pending))
+    pending = null
+  }
+  const letter = (cp: number) => {
+    out.push(pending ? syllable(cp, pending) : T(cp))
     pending = null
   }
   for (let i = 0; i < s.length; ) {
@@ -104,18 +119,14 @@ const quenya: Transform = line => {
       continue
     }
     if (c === 'x') {
-      out.push(T(0xe002))
-      if (pending) out.push(T(Q_VOWELS[pending]!))
-      pending = null
+      letter(0xe002)
       out.push(T(0xe020))
       i += 1
       continue
     }
     const hit = Q_CONS.find(([k]) => s.startsWith(k, i))
     if (hit) {
-      out.push(T(hit[1]))
-      if (pending) out.push(T(Q_VOWELS[pending]!))
-      pending = null
+      letter(hit[1])
       i += hit[0].length
       continue
     }
@@ -132,29 +143,33 @@ const quenya: Transform = line => {
 const tengwar: Transform = line => {
   const out: string[] = []
   const s = line.toLowerCase()
-  let canAttach = false // the last thing drawn is a consonant that has no tehta yet
+  let last = -1 // the letter just drawn, while it has no vowel yet; else -1
+  const letter = (cp: number) => {
+    out.push(T(cp))
+    last = cp
+  }
   for (let i = 0; i < s.length; ) {
     const c = s[i]!
     if (Q_VOWELS[c]) {
-      out.push(canAttach ? T(Q_VOWELS[c]!) : T(CARRIER, Q_VOWELS[c]!))
-      canAttach = false
+      if (last >= 0) out[out.length - 1] = syllable(last, c)
+      else out.push(syllable(CARRIER, c))
+      last = -1
       i += 1
       continue
     }
     if (c === 'x') {
-      out.push(T(0xe002, 0xe020))
-      canAttach = true
+      letter(0xe002)
+      letter(0xe020)
       i += 1
       continue
     }
     const hit = Q_CONS.find(([k]) => s.startsWith(k, i))
     if (hit) {
-      out.push(T(hit[1]))
-      canAttach = true
+      letter(hit[1])
       i += hit[0].length
       continue
     }
-    canAttach = false
+    last = -1
     out.push(line[i]!)
     i += 1
   }

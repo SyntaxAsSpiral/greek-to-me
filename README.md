@@ -24,8 +24,8 @@ Then open `/config` and set the `script` row of greek-to-me. `traces` (on by def
 | `arabic` | Arabic letters, one per Latin letter, in their separate forms; a terminal neither joins them nor runs them right to left | any with Arabic, such as DejaVu Sans |
 | `katakana` | half-width katakana, one cell wide so code keeps its columns | any with CJK, such as Noto Sans CJK |
 | `klingon` | pIqaD, CSUR U+F8D0 | Unifont CSUR |
-| `quenya` | Tengwar written as Quenya is: consonants as letters, each vowel a tehta on the *next* consonant (or a carrier) | `TengwarPUA.otf`, built below |
-| `tengwar` | the same Tengwar, written the way English and Sindarin often are: each vowel a tehta on the consonant *before* it (or a carrier) | `TengwarPUA.otf`, built below |
+| `quenya` | Tengwar written as Quenya is: consonants as letters, each vowel a tehta on the *next* consonant (or a carrier) | `TengwarPUA.ttf`, shipped in `fonts/` |
+| `tengwar` | the same Tengwar, written the way English and Sindarin often are: each vowel a tehta on the consonant *before* it (or a carrier) | `TengwarPUA.ttf`, shipped in `fonts/` |
 | `hiero` | the Egyptian uniliteral signs | Noto Sans Egyptian Hieroglyphs |
 | `maya` | one fixed glyph per character, from Maya.otf (U+F6200..F6847); not real Maya writing | Maya.otf |
 | `aurebesh` | Aurebesh | `AurebeshPUA.otf`, built below |
@@ -33,12 +33,12 @@ Then open `/config` and set the `script` row of greek-to-me. `traces` (on by def
 
 Aurebesh has no Unicode block, and Tengwar's private-use home (U+E000) is claimed by Nerd Font icons, so both are drawn from fonts that put the glyphs in plane 15 (U+F5000, U+F5100), where nothing else lives. The mod emits those codepoints, and your terminal falls back to the font that has them.
 
-- **Tengwar** ships with the mod: `fonts/TengwarPUA.otf` (SIL OFL, from Unifont; see `fonts/NOTICE.md`). It also carries the Klingon glyphs. Copy it to `~/.local/share/fonts/` and run `fc-cache -f`, then restart your terminal.
+- **Tengwar** ships with the mod: `fonts/TengwarPUA.ttf` (SIL OFL, from Unifont; see `fonts/NOTICE.md`). It also carries the Klingon glyphs. Copy it to `~/.local/share/fonts/` and run `fc-cache -f`, then restart your terminal. A letter and its vowel are one precomposed glyph, so each takes a single cell. `scripts/build-tengwar.py` rebuilds it from Unifont CSUR.
 - **Aurebesh** and **Maya** are not open fonts, so the mod does not ship them. Use your own copies: for Maya, UFAS's `Maya.otf` (free for personal use only); for Aurebesh, build the mapped font from an `Aurebesh.otf` you have the right to use:
 
 ```
 nix shell nixpkgs#python3Packages.fonttools -c \
-  python3 scripts/build-fonts.py /path/to/Aurebesh.otf /path/to/unifont_csur.otf ~/.local/share/fonts
+  python3 scripts/build-fonts.py /path/to/Aurebesh.otf ~/.local/share/fonts
 fc-cache -f
 ```
 

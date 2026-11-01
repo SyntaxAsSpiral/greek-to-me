@@ -1,3 +1,4 @@
 assets/
 *.otf
-!fonts/TengwarPUA.otf
+*.ttf
+!fonts/TengwarPUA.ttf
