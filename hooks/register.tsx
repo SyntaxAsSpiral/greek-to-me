@@ -10,6 +10,10 @@ const alphabets: Record<string, { lower: string; upper?: string; digits?: string
   },
   runic: { lower: 'ᚨᛒᚲᛞᛖᚠᚷᚺᛁᛃᚲᛚᛗᚾᛟᛈᚲᚱᛊᛏᚢᚢᚹᛉᛃᛉ' },
   braille: { lower: '⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵' },
+  // one Hebrew letter for each Latin one, so some letters share a sign; a terminal does not reorder it, so it still reads left to right
+  hebrew: { lower: 'אבכדעפגהישקלמנופקרסתטווצחז' },
+  // half-width katakana: one cell wide, so code keeps its columns (full-width kana would take two)
+  katakana: { lower: 'ｱﾊｾﾄｴﾌｹﾍｲｼｶﾘﾏﾅｵﾎｸﾗｻﾀｳﾋﾜｽﾔｿ' },
   // Egyptian uniliteral signs (Noto Sans Egyptian Hieroglyphs)
   hiero: { lower: '𓄿𓃀𓎡𓂧𓇋𓆑𓎼𓉔𓇋𓆓𓎡𓃭𓅓𓈖𓂝𓊪𓈎𓂋𓋴𓏏𓅱𓆑𓅱𓐍𓇌𓊃' },
   // pIqaD, ConScript Unicode Registry U+F8D0..
@@ -19,7 +23,7 @@ const alphabets: Record<string, { lower: string; upper?: string; digits?: string
   },
 }
 
-const buildMap = (name: string): Map<string, string> | null => {
+export const buildMap = (name: string): Map<string, string> | null => {
   const a = alphabets[name]
   if (!a) return null
   const m = new Map<string, string>()

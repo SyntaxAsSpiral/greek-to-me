@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
+import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -64,4 +64,13 @@ test('tengwar: a vowel sits on the consonant before it, a carrier when none does
   expect(tengwar('at')).toBe('\u{F512C}\u{F5140}\u{F5100}') // carrier with a-tehta, then tinco
   expect(tengwar('tal')).toBe('\u{F5100}\u{F5140}\u{F5132}') // the tehta stays on the t, then lambe
   expect(tengwar('t_a')).toBe('\u{F5100}_\u{F512C}\u{F5140}') // other characters break the attachment
+})
+
+test('hebrew and katakana: every letter maps, case folds, and katakana stays one cell wide', () => {
+  const h = byMap(buildMap('hebrew')!)
+  const k = byMap(buildMap('katakana')!)
+  expect(h('abc ABC 1')).toBe('אבכ אבכ 1')
+  expect(k('abc ABC 1')).toBe('ｱﾊｾ ｱﾊｾ 1')
+  for (const c of 'abcdefghijklmnopqrstuvwxyz') expect(k(c)).toMatch(/^[\uFF71-\uFF9D]$/) // half-width katakana only
+  expect(new Set([...'abcdefghijklmnopqrstuvwxyz'].map(k)).size).toBe(26)
 })
