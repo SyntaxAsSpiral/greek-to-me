@@ -113,6 +113,40 @@ const quenya: Transform = line => {
   return out.join('')
 }
 
+// The other convention, as in English and Sindarin: a vowel is a tehta on the consonant BEFORE it,
+// or on a short carrier when no consonant stands there.
+const tengwar: Transform = line => {
+  const out: string[] = []
+  const s = line.toLowerCase()
+  let canAttach = false // the last thing drawn is a consonant that has no tehta yet
+  for (let i = 0; i < s.length; ) {
+    const c = s[i]!
+    if (Q_VOWELS[c]) {
+      out.push(canAttach ? T(Q_VOWELS[c]!) : T(CARRIER, Q_VOWELS[c]!))
+      canAttach = false
+      i += 1
+      continue
+    }
+    if (c === 'x') {
+      out.push(T(0xe002, 0xe020))
+      canAttach = true
+      i += 1
+      continue
+    }
+    const hit = Q_CONS.find(([k]) => s.startsWith(k, i))
+    if (hit) {
+      out.push(T(hit[1]))
+      canAttach = true
+      i += hit[0].length
+      continue
+    }
+    canAttach = false
+    out.push(line[i]!)
+    i += 1
+  }
+  return out.join('')
+}
+
 const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
@@ -164,7 +198,7 @@ export const groupPreview = (call: GroupCall, tf: Transform): string => {
   return call.tool
 }
 
-export { byMap, quenya, maya, aurebesh }
+export { byMap, quenya, tengwar, maya, aurebesh }
 export const greekify = (text: string, tf: Transform, keep: Set<string>): string => {
   const out: string[] = []
   let fence: { ch: string; len: number; hide: boolean } | null = null
@@ -198,7 +232,7 @@ export const register: Register = (on, options) => {
       .map(s => s.trim().toLowerCase())
       .filter(Boolean),
   )
-  const special: Record<string, Transform> = { quenya, maya, aurebesh }
+  const special: Record<string, Transform> = { quenya, tengwar, maya, aurebesh }
   const map = special[script] || script === 'off' ? null : buildMap(script)
   const tf: Transform | null = special[script] ?? (map ? byMap(map) : null)
 

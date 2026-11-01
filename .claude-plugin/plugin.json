@@ -6,7 +6,7 @@
     "script": {
       "type": "string",
       "title": "Script",
-      "description": "What code blocks are drawn in. klingon and quenya (Tengwar) use private-use codepoints, maya uses Maya.otf's, hiero needs an Egyptian Hieroglyphs font; each needs a font that has them. aurebesh needs assets/AurebeshPUA.otf installed.",
+      "description": "What code blocks are drawn in. klingon, quenya and tengwar use private-use codepoints, maya uses Maya.otf's, hiero needs an Egyptian Hieroglyphs font; each needs a font that has them. aurebesh needs assets/AurebeshPUA.otf installed.",
       "default": "greek",
       "options": [
         "greek",
@@ -14,6 +14,7 @@
         "braille",
         "klingon",
         "quenya",
+        "tengwar",
         "hiero",
         "aurebesh",
         "maya",

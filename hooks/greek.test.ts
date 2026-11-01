@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, quenya, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
+import { greekify, byMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -57,4 +57,11 @@ test('group preview puts a command in the script and leaves other calls readable
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
   expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toBe('$ λσ')
   expect(groupPreview({ tool: 'Grep', input: { pattern: 'foo' } }, tf)).toBe('foo')
+})
+
+test('tengwar: a vowel sits on the consonant before it, a carrier when none does', () => {
+  expect(tengwar('ta')).toBe('\u{F5100}\u{F5140}') // tinco with an a-tehta
+  expect(tengwar('at')).toBe('\u{F512C}\u{F5140}\u{F5100}') // carrier with a-tehta, then tinco
+  expect(tengwar('tal')).toBe('\u{F5100}\u{F5140}\u{F5132}') // the tehta stays on the t, then lambe
+  expect(tengwar('t_a')).toBe('\u{F5100}_\u{F512C}\u{F5140}') // other characters break the attachment
 })

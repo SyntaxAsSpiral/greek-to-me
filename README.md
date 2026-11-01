@@ -18,7 +18,8 @@ Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fe
 | `runic` | Elder Futhark | any with Runic (U+16A0) |
 | `braille` | Braille | any with Braille |
 | `klingon` | pIqaD, CSUR U+F8D0 | Unifont CSUR |
-| `quenya` | Tengwar: consonants as letters, each vowel a tehta on the next consonant (or a carrier) | `TengwarPUA.otf`, built below |
+| `quenya` | Tengwar written as Quenya is: consonants as letters, each vowel a tehta on the *next* consonant (or a carrier) | `TengwarPUA.otf`, built below |
+| `tengwar` | the same Tengwar, written the way English and Sindarin often are: each vowel a tehta on the consonant *before* it (or a carrier) | `TengwarPUA.otf`, built below |
 | `hiero` | the Egyptian uniliteral signs | Noto Sans Egyptian Hieroglyphs |
 | `maya` | one fixed glyph per character, from Maya.otf (U+F6200..F6847); not real Maya writing | Maya.otf |
 | `aurebesh` | Aurebesh | `AurebeshPUA.otf`, built below |
