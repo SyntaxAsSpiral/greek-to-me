@@ -183,6 +183,11 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
 // Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
+// Tools whose folded groups the mod may draw itself, in the script. A group holding any other tool is left to the
+// engine and its own truncation. Add a tool here only if its calls carry code worth showing and groupPreview can
+// show it; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from being drawn here.
+export const SCRIPT_GROUP_TOOLS = new Set(['Bash'])
+
 // Tools whose collapsed rows stay in Latin: what a Write or an Edit puts in a file is worth reading as it is.
 export const LATIN_TOOLS = new Set(['Write', 'Edit'])
 const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
@@ -317,7 +322,7 @@ export const register: Register = (on, options) => {
   on('ui.render', { component: 'ToolGroup' }, ($, e, next) => {
     const p = e.props
     if (!traces || !safe || p.isExpanded || p.isCallsOnly === false) return next(e)
-    if (!p.calls.some(c => c.tool === 'Bash')) return next(e)
+    if (!p.calls.every(c => SCRIPT_GROUP_TOOLS.has(c.tool))) return next(e)
     const { Box, Text } = $.ui.resolve(e)
     const last = p.calls[p.calls.length - 1]
     const summary = groupSummary(p.calls, p.isActive)

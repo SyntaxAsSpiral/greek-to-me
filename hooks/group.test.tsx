@@ -61,6 +61,26 @@ test('collapsed Write and Edit rows stay in Latin, a collapsed Bash row does not
   expect(seen.Bash).toBe('λσ -λα')
 })
 
+test('a group of shell commands is drawn by the mod, a mixed group is left to the engine', { options: { script: 'greek' } }, async ($, on) => {
+  const reached: string[] = []
+  on('ui.render', ($: any, e: any) => {
+    reached.push(e.requestId)
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const bash = { tool: 'Bash', input: { command: 'ls' }, isRunning: true, isErrored: false, isInterrupted: false }
+  const edit = { tool: 'Edit', input: { file_path: '/x' }, isRunning: false, isErrored: false, isInterrupted: false }
+  const groups: [string, any[]][] = [['only', [bash, bash]], ['mixed', [edit, bash]], ['grep', [{ ...edit, tool: 'Grep' }, bash]]]
+  for (const [id, calls] of groups) {
+    const ui = await $.ui.mount({
+      plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: id,
+      props: { isActive: true, isExpanded: false, isCallsOnly: true, calls },
+    })
+    await ui.unmount()
+  }
+  expect(reached).toEqual(['mixed', 'grep'])
+})
+
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
   on('ui.render', ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
