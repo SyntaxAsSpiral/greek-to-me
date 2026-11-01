@@ -281,10 +281,10 @@ export const greekify = (text: string, tf: Transform, keep: Set<string>): string
   return out.join('\n')
 }
 
-// 14s, then 1:05, like the spinner's readout
+// 14s, then 1m 5s, like the spinner's readout
 export const clockText = (seconds: number): string => {
   const s = Math.max(0, Math.floor(seconds))
-  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${s % 60}s`
 }
 
 const tickAtom = atom({ plugin: 'greek-to-me', key: 'tick' } as const, 0 as Tick)

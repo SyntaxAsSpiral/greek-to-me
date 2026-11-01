@@ -120,6 +120,7 @@ test('customMap: 26 characters map a to z, 52 give the capitals their own, space
 test('clockText: seconds, then minutes and seconds', () => {
   expect(clockText(0)).toBe('0s')
   expect(clockText(14.9)).toBe('14s')
-  expect(clockText(65)).toBe('1:05')
+  expect(clockText(60)).toBe('1m 0s')
+  expect(clockText(65)).toBe('1m 5s')
   expect(clockText(-3)).toBe('0s')
 })
