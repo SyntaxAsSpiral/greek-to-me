@@ -131,7 +131,7 @@ test('a good custom alphabet is used', { options: { script: 'custom', alphabet: 
   expect(await drawnCommand($, on)).toBe('oh') // l is o, s is h
 })
 
-test('a shell group carries its own clock and the background-key note while it runs', { options: { script: 'greek' } }, async ($, on) => {
+test('a shell group carries its own clock while it runs and when it is done', { options: { script: 'greek' } }, async ($, on) => {
   let now = 1000
   on('clock.now', async () => ({ value: now }))
   on('clock.every', async () => ({ value: undefined }))
@@ -142,7 +142,7 @@ test('a shell group carries its own clock and the background-key note while it r
   const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(true) })
   const running = JSON.stringify(await ui.find({ type: 'Text' }))
   expect(running).toContain('0s')
-  expect(running).toContain('ctrl+b to run in background')
+  expect(running).not.toContain('run in background') // the summary carries no key note
   await ui.unmount()
   now = 6500
   const ui2 = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(false) })

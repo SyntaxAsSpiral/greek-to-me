@@ -394,8 +394,7 @@ export const register: Register = (on, options) => {
       })
     }
     const secs = clock ? ((clock.end ?? now) - clock.start) / 1000 : null
-    const note = p.isActive && bgKey ? ` · ${bgKey} to run in background` : ''
-    const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)}${note})`)
+    const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
     if (!p.isActive || !last) {
       lastPeek = []
       return <Text>{summary}</Text>
