@@ -226,19 +226,25 @@ export const groupSummary = (calls: readonly GroupCall[], active: boolean): stri
 }
 // The lines of the latest call's preview; the group wraps them to the row and keeps PREVIEW_ROWS of them.
 const PREVIEW_ROWS = 7
-// Wrap lines into rows of at most width characters, and keep the first max rows; if more would follow, the
-// last kept row ends in an ellipsis. Script characters are one cell wide, so characters are cells.
-export const wrapRows = (lines: readonly string[], width: number, max: number): string[] => {
-  const rows: string[] = []
-  for (const line of lines) {
+// Wrap lines into rows of at most width characters and keep max rows in all. If more would follow, the last row is
+// the marker, `more(n)`, n being how many source lines have anything hidden (a line cut part-way counts), as the
+// engine's own peek counts what it hides. Script characters are one cell wide, so characters are cells.
+export const wrapRows = (
+  lines: readonly string[],
+  width: number,
+  max: number,
+  more: (n: number) => string = n => `(+${n} ${n === 1 ? 'line' : 'lines'})`,
+): string[] => {
+  const rows: { text: string; src: number }[] = []
+  lines.forEach((line, src) => {
     const chars = [...line]
-    if (chars.length === 0) rows.push('')
-    for (let i = 0; i < chars.length; i += width) rows.push(chars.slice(i, i + width).join(''))
-  }
-  if (rows.length <= max) return rows
-  const kept = rows.slice(0, max)
-  kept[max - 1] = [...kept[max - 1]!].slice(0, Math.max(0, width - 2)).join('') + ' …'
-  return kept
+    if (chars.length === 0) rows.push({ text: '', src })
+    for (let i = 0; i < chars.length; i += width) rows.push({ text: chars.slice(i, i + width).join(''), src })
+  })
+  if (rows.length <= max) return rows.map(r => r.text)
+  const kept = rows.slice(0, max - 1)
+  const hidden = new Set(rows.slice(max - 1).map(r => r.src)).size
+  return [...kept.map(r => r.text), more(hidden)]
 }
 
 // While the latest call has no input yet (the next command is still streaming), keep the previous peek on screen
@@ -367,7 +373,7 @@ export const register: Register = (on, options) => {
     const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
     const peek = groupPreview(last, safe)
     if (peek.length) lastPeek = peek
-    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS)
+    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS, n => safe(`(+${n} ${n === 1 ? 'line' : 'lines'})`))
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
     return (
       <Box flexDirection="column" paddingTop={1}>

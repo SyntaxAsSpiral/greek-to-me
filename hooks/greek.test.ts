@@ -65,14 +65,15 @@ test('group preview: every line is previewed, with the first marked as a command
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
   expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toEqual(['$ λσ', '  λσ', '  λσ'])
 })
-test('wrapRows: a long line wraps into rows, capped, with an ellipsis on the last kept one', () => {
+test('wrapRows: lines wrap into rows; past the cap the last row counts the source lines that have anything hidden', () => {
   expect(wrapRows(['abcdefghij'], 4, 5)).toEqual(['abcd', 'efgh', 'ij'])
   expect(wrapRows(['a', 'b'], 4, 5)).toEqual(['a', 'b'])
-  const out = wrapRows(['x'.repeat(30)], 10, 2)
-  expect(out.length).toBe(2)
-  expect(out[1]).toBe('xxxxxxxx …')
+  expect(wrapRows(['a', 'b', 'c', 'd', 'e'], 4, 5)).toEqual(['a', 'b', 'c', 'd', 'e']) // exactly the cap: no marker
+  expect(wrapRows(['a', 'b', 'c', 'd', 'e', 'f', 'g'], 4, 5)).toEqual(['a', 'b', 'c', 'd', '(+3 lines)'])
+  expect(wrapRows(['a', 'b', 'c', 'd', 'e', 'f'], 4, 5)).toEqual(['a', 'b', 'c', 'd', '(+2 lines)'])
+  expect(wrapRows(['x'.repeat(30)], 10, 2)).toEqual(['xxxxxxxxxx', '(+1 line)']) // one long line, cut: one line
+  expect(wrapRows(['a', 'b', 'c', 'd'], 4, 3, n => `<${n}>`)).toEqual(['a', 'b', '<2>']) // the marker is the caller's to draw
 })
-
 test('group preview: a call with no input yet, or none left, shows nothing, never the tool name', () => {
   const tf = byMap(new Map([['l', 'λ']]))
   expect(groupPreview({ tool: 'Bash' }, tf)).toEqual([])

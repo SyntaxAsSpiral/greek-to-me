@@ -107,6 +107,28 @@ test('a group whose latest call has no input yet draws a quiet ellipsis, not the
   await ui.unmount()
 })
 
+test('a running group whose command is longer than the preview ends in a (+N lines) count, in the script', { options: { script: 'greek' } }, async ($, on) => {
+  on('clock.now', async () => ({ value: 0 }))
+  on('clock.every', async () => ({ value: undefined }))
+  on('ui.render', ($: any, e: any) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const command = Array.from({ length: 12 }, (_, i) => `echo ${i + 1}`).join('\n')
+  const ui = await $.ui.mount({
+    plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'g3',
+    props: {
+      isActive: true, isExpanded: false, isCallsOnly: true,
+      calls: [{ tool: 'Bash', input: { command }, isRunning: true, isErrored: false, isInterrupted: false }],
+    },
+  })
+  const shown = (await ui.findAll({ type: 'Text' })).map(t => t.text)
+  // 7 rows kept: the marker takes the last, so 6 lines show and 6 are counted; the greek of "lines" is not Latin
+  expect(shown.at(-1)).toContain('(+6 ')
+  expect(shown.at(-1)).not.toContain('lines')
+  await ui.unmount()
+})
+
 // what a collapsed Bash row's command reaches the engine as, under the given options
 const drawnCommand = async ($: any, on: any): Promise<unknown> => {
   let seen: unknown
