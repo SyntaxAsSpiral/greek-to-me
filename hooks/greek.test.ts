@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, quenya, maya, aurebesh, mapDeep, ansiSafe } from './register'
+import { greekify, byMap, quenya, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -46,4 +46,15 @@ test('traces: a result keeps its shape and a nested content string changes', () 
 test('traces: ANSI colour codes survive, the text between them changes', () => {
   const tf = ansiSafe(byMap(new Map([['m', 'μ'], ['a', 'α']])))
   expect(tf('\x1b[31mamm\x1b[0m a')).toBe('\x1b[31mαμμ\x1b[0m α')
+})
+
+test("group summary reads like the engine's, in both tenses", () => {
+  const calls = [{ tool: 'Grep' }, { tool: 'Bash' }, { tool: 'Bash' }]
+  expect(groupSummary(calls, true)).toBe('Searching for 1 pattern, running 2 shell commands…')
+  expect(groupSummary(calls, false)).toBe('Searched for 1 pattern, ran 2 shell commands')
+})
+test('group preview puts a command in the script and leaves other calls readable', () => {
+  const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
+  expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toBe('$ λσ')
+  expect(groupPreview({ tool: 'Grep', input: { pattern: 'foo' } }, tf)).toBe('foo')
 })

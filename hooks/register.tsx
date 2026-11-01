@@ -134,6 +134,36 @@ export const mapDeep = (value: unknown, keys: Set<string>, tf: Transform, hit = 
   return value
 }
 
+// A folded run of tool calls ("Searching for 1 pattern, running 2 shell commands…") is drawn by the engine
+// and cannot be rewritten, so a group holding a shell command is drawn here instead: the same summary,
+// and, while it runs, the latest call as a '⎿' line with its code in the script.
+type GroupCall = { tool: string; input?: unknown }
+const KINDS: Record<string, string> = { Read: 'read', Grep: 'search', Glob: 'search', LS: 'list', Bash: 'shell' }
+const PHRASES: Record<string, [string, string, string, string]> = {
+  read: ['reading', 'read', 'file', 'files'],
+  search: ['searching for', 'searched for', 'pattern', 'patterns'],
+  list: ['listing', 'listed', 'directory', 'directories'],
+  shell: ['running', 'ran', 'shell command', 'shell commands'],
+}
+export const groupSummary = (calls: readonly GroupCall[], active: boolean): string => {
+  const n: Record<string, number> = {}
+  for (const c of calls) n[KINDS[c.tool] ?? 'other'] = (n[KINDS[c.tool] ?? 'other'] ?? 0) + 1
+  const parts = Object.entries(PHRASES)
+    .filter(([k]) => n[k])
+    .map(([k, [ing, ed, one, many]]) => `${active ? ing : ed} ${n[k]} ${n[k] === 1 ? one : many}`)
+  if (n.other) parts.push(`${active ? 'running' : 'ran'} ${n.other} other ${n.other === 1 ? 'tool' : 'tools'}`)
+  const line = parts.join(', ')
+  return (line.charAt(0).toUpperCase() + line.slice(1)) + (active ? '…' : '')
+}
+export const groupPreview = (call: GroupCall, tf: Transform): string => {
+  const i = (call.input ?? {}) as Record<string, unknown>
+  if (call.tool === 'Bash' && typeof i.command === 'string') return '$ ' + tf(i.command)
+  if (typeof i.pattern === 'string') return i.pattern
+  if (typeof i.file_path === 'string') return i.file_path
+  if (typeof i.path === 'string') return i.path
+  return call.tool
+}
+
 export { byMap, quenya, maya, aurebesh }
 export const greekify = (text: string, tf: Transform, keep: Set<string>): string => {
   const out: string[] = []
@@ -175,8 +205,9 @@ export const register: Register = (on, options) => {
   const traces = options.traces !== false && tf !== null
   const safe = tf ? ansiSafe(tf) : null
 
+  // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
   on('ui.render', { component: 'ToolUse' }, ($, e, next) => {
-    if (!traces || !safe) return next(e)
+    if (!traces || !safe || e.props.isExpanded) return next(e)
     const p = e.props
     const props = { ...p, input: mapDeep(p.input, INPUT_KEYS, safe) }
     if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, safe)
@@ -184,8 +215,24 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
-    if (!traces || !safe) return next(e)
+    if (!traces || !safe || e.props.isExpanded) return next(e)
     return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
+  })
+
+  on('ui.render', { component: 'ToolGroup' }, ($, e, next) => {
+    const p = e.props
+    if (!traces || !safe || p.isExpanded || p.isCallsOnly === false) return next(e)
+    if (!p.calls.some(c => c.tool === 'Bash')) return next(e)
+    const { Box, Text } = $.ui.resolve(e)
+    const last = p.calls[p.calls.length - 1]
+    const summary = groupSummary(p.calls, p.isActive)
+    if (!p.isActive || !last) return <Text>{summary}</Text>
+    return (
+      <Box flexDirection="column">
+        <Text>{summary}</Text>
+        <Text dimColor>{'  ⎿  ' + groupPreview(last, safe)}</Text>
+      </Box>
+    )
   })
 
   on('ui.render', { component: 'AssistantMessage' }, ($, e, next) => {
