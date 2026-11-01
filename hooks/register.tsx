@@ -203,17 +203,21 @@ export const groupSummary = (calls: readonly GroupCall[], active: boolean): stri
   const line = parts.join(', ')
   return (line.charAt(0).toUpperCase() + line.slice(1)) + (active ? '…' : '')
 }
-export const groupPreview = (call: GroupCall, tf: Transform): string => {
+// Up to PREVIEW_LINES lines of the latest call; a command is cut there with an ellipsis, and each line is
+// cut to the row by its Text.
+const PREVIEW_LINES = 5
+export const groupPreview = (call: GroupCall, tf: Transform): string[] => {
   const i = (call.input ?? {}) as Record<string, unknown>
   if (call.tool === 'Bash' && typeof i.command === 'string') {
-    // the first line only, with an ellipsis if more follows: the line is a preview and the Text cuts it to the row
-    const [first = '', ...rest] = i.command.split('\n')
-    return '$ ' + tf(first) + (rest.length ? ' …' : '')
+    const lines = i.command.split('\n')
+    const shown = lines.slice(0, PREVIEW_LINES).map((l, n) => (n === 0 ? '$ ' : '  ') + tf(l))
+    if (lines.length > PREVIEW_LINES) shown[shown.length - 1] += ' …'
+    return shown
   }
-  if (typeof i.pattern === 'string') return i.pattern
-  if (typeof i.file_path === 'string') return i.file_path
-  if (typeof i.path === 'string') return i.path
-  return call.tool
+  if (typeof i.pattern === 'string') return [i.pattern]
+  if (typeof i.file_path === 'string') return [i.file_path]
+  if (typeof i.path === 'string') return [i.path]
+  return [call.tool]
 }
 
 export { byMap, quenya, tengwar, maya, aurebesh }
@@ -279,10 +283,15 @@ export const register: Register = (on, options) => {
     const last = p.calls[p.calls.length - 1]
     const summary = groupSummary(p.calls, p.isActive)
     if (!p.isActive || !last) return <Text>{summary}</Text>
+    const lines = groupPreview(last, safe)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
-        <Text dimColor wrap="truncate-end">{'  ⎿  ' + groupPreview(last, safe)}</Text>
+        {lines.map((line, n) => (
+          <Text key={String(n)} dimColor wrap="truncate-end">
+            {(n === 0 ? '  ⎿  ' : '     ') + line}
+          </Text>
+        ))}
       </Box>
     )
   })

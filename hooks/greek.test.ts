@@ -55,8 +55,8 @@ test("group summary reads like the engine's, in both tenses", () => {
 })
 test('group preview puts a command in the script and leaves other calls readable', () => {
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
-  expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toBe('$ λσ')
-  expect(groupPreview({ tool: 'Grep', input: { pattern: 'foo' } }, tf)).toBe('foo')
+  expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toEqual(['$ λσ'])
+  expect(groupPreview({ tool: 'Grep', input: { pattern: 'foo' } }, tf)).toEqual(['foo'])
 })
 
 test('tengwar: a vowel sits on the consonant before it, a carrier when none does', () => {
@@ -96,8 +96,10 @@ test('maya: only full-width signs, never a zero-width mark, and stable per chara
   expect(maya('aa')).toBe(maya('a') + maya('a'))
 })
 
-test('group preview: a multi-line command is cut to its first line with an ellipsis', () => {
+test('group preview: up to five lines, then an ellipsis on the last', () => {
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
-  expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toBe('$ λσ …')
-  expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toBe('$ λσ')
+  expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toEqual(['$ λσ', '  λσ', '  λσ'])
+  const many = groupPreview({ tool: 'Bash', input: { command: Array(8).fill('ls').join('\n') } }, tf)
+  expect(many.length).toBe(5)
+  expect(many[4]).toBe('  λσ …')
 })
