@@ -183,6 +183,8 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
 // Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
+// Tools whose collapsed rows stay in Latin: what a Write puts in a file is worth reading as it is.
+export const LATIN_TOOLS = new Set(['Write'])
 const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
 const OUTPUT_KEYS = new Set(['stdout', 'stderr', 'content', 'oldString', 'newString', 'old_string', 'new_string', 'lines', 'new_source'])
 
@@ -300,7 +302,7 @@ export const register: Register = (on, options) => {
 
   // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
   on('ui.render', { component: 'ToolUse' }, ($, e, next) => {
-    if (!traces || !safe || e.props.isExpanded) return next(e)
+    if (!traces || !safe || e.props.isExpanded || LATIN_TOOLS.has(e.props.tool)) return next(e)
     const p = e.props
     const props = { ...p, input: mapDeep(p.input, INPUT_KEYS, safe) }
     if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, safe)
@@ -308,7 +310,7 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
-    if (!traces || !safe || e.props.isExpanded) return next(e)
+    if (!traces || !safe || e.props.isExpanded || LATIN_TOOLS.has(e.props.tool)) return next(e)
     return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
   })
 

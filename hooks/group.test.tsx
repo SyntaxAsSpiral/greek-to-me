@@ -37,6 +37,25 @@ test('a collapsed tool row is in the script, an expanded one is the real code', 
   expect(seen.expanded).toBe('ls -la')
 })
 
+test('a collapsed Write row stays in Latin, a collapsed Edit row does not', { options: { script: 'greek' } }, async ($, on) => {
+  const seen: Record<string, unknown> = {}
+  on('ui.render', ($: any, e: any) => {
+    seen[e.props.tool] = e.props.input?.content ?? e.props.input?.new_string
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const rows: [string, Record<string, string>][] = [['Write', { file_path: '/x', content: 'ls -la' }], ['Edit', { file_path: '/x', old_string: 'a', new_string: 'ls -la' }]]
+  for (const [tool, input] of rows) {
+    const ui = await $.ui.mount({
+      plugin: 'greek-to-me', surface: 'terminal', component: 'ToolUse', requestId: 'w' + tool,
+      props: { tool_use_id: 'w' + tool, tool, input, isRunning: false, isErrored: false, isInterrupted: false, isExpanded: false },
+    })
+    await ui.unmount()
+  }
+  expect(seen.Write).toBe('ls -la')
+  expect(seen.Edit).toBe('λσ -λα')
+})
+
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
   on('ui.render', ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
