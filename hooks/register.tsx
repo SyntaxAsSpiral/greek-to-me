@@ -222,13 +222,15 @@ export const wrapRows = (lines: readonly string[], width: number, max: number): 
 
 export const groupPreview = (call: GroupCall, tf: Transform): string[] => {
   const i = (call.input ?? {}) as Record<string, unknown>
-  if (call.tool === 'Bash' && typeof i.command === 'string') {
+  if (call.tool === 'Bash' && typeof i.command === 'string' && i.command.trim() !== '') {
     return i.command.split('\n').map((l, n) => (n === 0 ? '$ ' : '  ') + tf(l))
   }
-  if (typeof i.pattern === 'string') return [i.pattern]
-  if (typeof i.file_path === 'string') return [i.file_path]
-  if (typeof i.path === 'string') return [i.path]
-  return [call.tool]
+  if (typeof i.pattern === 'string' && i.pattern) return [i.pattern]
+  if (typeof i.file_path === 'string' && i.file_path) return [i.file_path]
+  if (typeof i.path === 'string' && i.path) return [i.path]
+  // nothing to show: the input has not arrived yet, or has been cleared at the end. Never the tool's name, which
+  // would be Latin; the group draws a quiet ellipsis instead.
+  return []
 }
 
 export { byMap, quenya, tengwar, maya, aurebesh }
@@ -295,7 +297,8 @@ export const register: Register = (on, options) => {
     const summary = groupSummary(p.calls, p.isActive)
     if (!p.isActive || !last) return <Text>{summary}</Text>
     const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
-    const lines = wrapRows(groupPreview(last, safe), room, PREVIEW_ROWS)
+    const peek = groupPreview(last, safe)
+    const lines = wrapRows(peek.length ? peek : ['…'], room, PREVIEW_ROWS)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>

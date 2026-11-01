@@ -36,3 +36,19 @@ test('a collapsed tool row is in the script, an expanded one is the real code', 
   expect(seen.collapsed).toBe('λσ -λα')
   expect(seen.expanded).toBe('ls -la')
 })
+
+test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
+  on('ui.render', ($: any, e: any) => {
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const ui = await $.ui.mount({
+    plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'g2',
+    props: {
+      isActive: true, isExpanded: false, isCallsOnly: true,
+      calls: [{ tool: 'Bash', input: undefined, isRunning: true, isErrored: false, isInterrupted: false }],
+    },
+  })
+  expect(await ui.find({ type: 'Text' })).toBeTruthy()
+  await ui.unmount()
+})

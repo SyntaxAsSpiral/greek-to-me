@@ -107,3 +107,12 @@ test('wrapRows: a long line wraps into rows, capped, with an ellipsis on the las
   expect(out.length).toBe(2)
   expect(out[1]).toBe('xxxxxxxx …')
 })
+
+test('group preview: a call with no input yet, or none left, shows nothing, never the tool name', () => {
+  const tf = byMap(new Map([['l', 'λ']]))
+  expect(groupPreview({ tool: 'Bash' }, tf)).toEqual([])
+  expect(groupPreview({ tool: 'Bash', input: {} }, tf)).toEqual([])
+  expect(groupPreview({ tool: 'Bash', input: { command: '   ' } }, tf)).toEqual([])
+  expect(groupPreview({ tool: 'Grep', input: {} }, tf)).toEqual([])
+  expect(groupPreview({ tool: 'Read', input: { file_path: '' } }, tf)).toEqual([])
+})
