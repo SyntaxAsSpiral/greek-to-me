@@ -46,16 +46,22 @@ type Transform = (line: string) => string
 const byMap = (map: Map<string, string>): Transform => line =>
   [...line].map(c => map.get(c) ?? c).join('')
 
-// Maya.otf (private use U+F6200-F6847, 1608 glyphs) is no alphabet: every distinct
-// character gets one fixed glyph, so a repeated letter is a repeated sign.
-const MAYA_LO = 0xf6200
-const MAYA_N = 1608
+// Maya.otf (private use U+F6200-F6847) is no alphabet, and a third of its glyphs are zero-width marks that
+// only overlay a main sign, which a terminal draws as a blank cell. So only the main signs that fit one cell
+// are used (392 of 1608: advance 1000 to 1300 of 2048, ink inside it), and every distinct character gets one
+// fixed sign, so a repeated letter is a repeated sign.
+const MAYA_SIGNS: number[] = 'f656f-f6587,f6589-f658e,f6590-f659a,f659c-f65a2,f65a4-f65a6,f65a8-f65af,f65b2-f65c8,f65ca-f65ce,f65d0-f65d7,f65d9-f65e3,f65e6-f65f2,f65f4-f65fb,f65fd-f6600,f6603-f660a,f660c-f661a,f661c-f6620,f6622-f662b,f662d-f662f,f6632-f6636,f6638-f663a,f663c-f6643,f6647,f6649-f664a,f664c-f6651,f6653-f6655,f6657-f6658,f665c,f665f,f6661,f6664-f6671,f6675,f6678-f6679,f667b,f6682-f6683,f6686-f6687,f6689-f668c,f668f-f6690,f6696,f6698,f66a0,f66a4,f66a8,f66aa-f66ab,f66ad-f66ae,f66b5,f66b9-f66ba,f66be,f66c0,f66c4-f66c5,f66c8-f66c9,f66cf,f66d1,f66d3-f66d4,f66d7,f66da-f66db,f66e0,f66e4,f66e7,f66f3-f66f5,f66f8,f66fc,f6706,f670a-f670b,f670d-f670e,f6710,f6713,f6715,f6719-f671a,f671f,f6722,f6728,f672a,f6730-f6733,f6738,f673b,f673f,f6743,f6745-f6748,f674b-f674c,f674e-f6750,f6752,f6757-f6758,f675b-f675c,f6761,f6763,f6767-f6768,f676e-f676f,f6772-f6774,f6778-f6779,f677b-f677c,f677e,f6780,f6788-f6789,f678b,f678d,f6792-f6793,f6795-f6796,f679c,f679e-f679f,f67a3,f67a6,f67ab,f67ae,f67b5-f67b6,f67b9,f67c1,f67c3-f67c4,f67c6-f67c7,f67ca-f67cc,f67d0-f67f0,f67f2-f67f5,f67f9-f67fa,f67fe,f6800-f6801,f6804,f6806,f680a,f680e-f680f,f6816'
+  .split(',')
+  .flatMap(r => {
+    const [lo = r, hi = r] = r.split('-')
+    return Array.from({ length: parseInt(hi, 16) - parseInt(lo, 16) + 1 }, (_, i) => parseInt(lo, 16) + i)
+  })
 const maya: Transform = line =>
   [...line]
     .map(c => {
       if (!/[A-Za-z0-9]/.test(c)) return c
       const k = c.toLowerCase().codePointAt(0)!
-      return String.fromCodePoint(MAYA_LO + ((k * 2654435761) >>> 0) % MAYA_N)
+      return String.fromCodePoint(MAYA_SIGNS[((k * 2654435761) >>> 0) % MAYA_SIGNS.length]!)
     })
     .join('')
 

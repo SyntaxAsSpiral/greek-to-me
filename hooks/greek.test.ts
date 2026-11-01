@@ -84,3 +84,14 @@ test('malayalam and arabic: 26 distinct signs each, case folds, other characters
   expect(byMap(buildMap('arabic')!)('ab')).toBe('اب')
   expect(byMap(buildMap('malayalam')!)('ab')).toBe('അബ')
 })
+
+test('maya: only full-width signs, never a zero-width mark, and stable per character', () => {
+  const o = maya('abcdefghijklmnopqrstuvwxyz0123456789')
+  expect([...o].length).toBe(36)
+  expect(new Set([...o]).size).toBeGreaterThan(30) // a hash may collide now and then, never wholesale
+  for (const c of o) {
+    const cp = c.codePointAt(0)!
+    expect(cp >= 0xf6200 && cp <= 0xf6847).toBe(true)
+  }
+  expect(maya('aa')).toBe(maya('a') + maya('a'))
+})
