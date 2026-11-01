@@ -10,5 +10,6 @@ with one of five vowel marks drawn onto it from the same font, so a letter and i
 Klingon glyphs are kept where they are, the rest of Unifont is dropped, and the family is renamed "Tengwar PUA".
 Unifont declares no Reserved Font Name. `scripts/build-tengwar.py` rebuilds the file from Unifont CSUR.
 
-The mod does not bundle `Aurebesh.otf` or `Maya.otf`, which are not open fonts; see `scripts/build-fonts.py`
-and the README for how to use your own copies.
+The mod does not bundle `Aurebesh.otf` or `Maya.otf`. Maya (UFAS) is free for personal use only and may not be redistributed; Aurebesh
+(Pixel Sagas) ships with an OFL file but its embedded notice says all rights reserved. The README links both and `scripts/build-fonts.py`
+maps Aurebesh; use your own copies.
