@@ -29,21 +29,14 @@ Then open `/config` and set the `script` row of greek-to-me. `traces` (on by def
 | `grimdark` | a skull, cog, cross and ankh among the letters, alchemical elements and Elder Futhark runes for the rest. The only single-cell skull is ☠, so there is one | Noto Sans Symbols or Symbola (alchemical), DejaVu Sans, a runic font |
 | `hiero` | the Egyptian uniliteral signs | Noto Sans Egyptian Hieroglyphs |
 | `maya` | one fixed glyph per character, from Maya.otf (U+F6200..F6847); not real Maya writing | Maya.otf |
-| `aurebesh` | Aurebesh | `AurebeshPUA.otf`, built below |
+| `aurebesh` | Aurebesh | `AurebeshPUA.otf`, shipped in `fonts/` |
 | `off` | nothing | |
 
 Aurebesh has no Unicode block, and Tengwar's private-use home (U+E000) is claimed by Nerd Font icons, so both are drawn from fonts that put the glyphs in plane 15 (U+F5000, U+F5100), where nothing else lives. The mod emits those codepoints, and your terminal falls back to the font that has them.
 
 - **Tengwar** ships with the mod: `fonts/TengwarPUA.ttf` (SIL OFL, from Unifont; see `fonts/NOTICE.md`). It also carries the Klingon glyphs. Copy it to `~/.local/share/fonts/` and run `fc-cache -f`, then restart your terminal. A letter and its vowel are one precomposed glyph, so each takes a single cell. `scripts/build-tengwar.py` rebuilds it from Unifont CSUR.
-- **Aurebesh** and **Maya** are not shipped with the mod; get them yourself.
-  - **Maya** is `Maya.otf` from George Douros's *Unicode Fonts for Ancient Scripts* (UFAS), free for strictly personal use (a public license is sold; the font may not be redistributed). It is hard to find: the old home, `users.teilar.gr/~g1951d`, is gone, and UFAS now lives at [dn-works.com/ufas](https://dn-works.com/ufas/). The fonts are not separate downloads there. They are attached to the PDF [Fonts.pdf](https://dn-works.com/wp-content/uploads/UFAS/Fonts.pdf) (the licence is [License.pdf](https://dn-works.com/wp-content/uploads/UFAS/License.pdf)). Open the PDF's attachments panel and save `Maya.otf`, or run `pdfdetach -saveall Fonts.pdf` (poppler-utils). The glyph layout the mod relies on is that of the 2020 (v13.00) file.
-  - **Aurebesh** is Neale Davidson's, from [Pixel Sagas](https://www.pixelsagas.com/?page_id=4004) (download: [PS_Aurebesh.zip](https://www.pixelsagas.com/wp-content/uploads/2014/08/PS_Aurebesh.zip)). The zip carries an `OFL.txt` (SIL OFL 1.1), though the font's own embedded notice still says "All Rights Reserved"; read both before redistributing it. Then build the mapped font from its `Aurebesh.otf`:
-
-```
-nix shell nixpkgs#python3Packages.fonttools -c \
-  python3 scripts/build-fonts.py /path/to/Aurebesh.otf ~/.local/share/fonts
-fc-cache -f
-```
+- **Aurebesh** ships with the mod: `fonts/AurebeshPUA.otf`, Neale Davidson's Aurebesh from [Pixel Sagas](https://www.pixelsagas.com/?page_id=4004) with its glyphs also at U+F5000 + ASCII. His download carries an SIL OFL 1.1 file, which is `fonts/OFL-Aurebesh.txt`; see `fonts/NOTICE.md`. Install it like Tengwar. `scripts/build-fonts.py` rebuilds it from his `Aurebesh.otf` ([PS_Aurebesh.zip](https://www.pixelsagas.com/wp-content/uploads/2014/08/PS_Aurebesh.zip)).
+- **Maya** is not shipped with the mod; get it yourself. It is `Maya.otf` from George Douros's *Unicode Fonts for Ancient Scripts* (UFAS), free for strictly personal use (a public license is sold; the font may not be redistributed). It is hard to find: the old home, `users.teilar.gr/~g1951d`, is gone, and UFAS now lives at [dn-works.com/ufas](https://dn-works.com/ufas/). The fonts are not separate downloads there. They are attached to the PDF [Fonts.pdf](https://dn-works.com/wp-content/uploads/UFAS/Fonts.pdf) (the licence is [License.pdf](https://dn-works.com/wp-content/uploads/UFAS/License.pdf)). Open the PDF's attachments panel and save `Maya.otf`, or run `pdfdetach -saveall Fonts.pdf` (poppler-utils). The glyph layout the mod relies on is that of the 2020 (v13.00) file.
 
 If you display a session remotely, install the fonts on the machine whose terminal draws it, not on the host that runs Claude Code.
 

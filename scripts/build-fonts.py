@@ -5,8 +5,10 @@ usage: build-fonts.py AUREBESH.otf OUTDIR
 
 AurebeshPUA.otf  Aurebesh glyphs also at U+F5000 + ASCII (aurebesh)
 
+The source is the Aurebesh.otf of Neale Davidson's zip at pixelsagas.com, which carries an OFL 1.1 file.
 It sits in plane 15 so Nerd Font icons, which own U+E000 and U+EA00, cannot
-shadow them. Needs fontTools: nix shell nixpkgs#python3Packages.fonttools -c python3 ...
+shadow them. Needs fontTools: 
+    nix shell --impure --expr 'with (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; python3.withPackages (p: [ p.fonttools ])' -c python3 ...
 """
 import sys, os
 from fontTools.ttLib import TTFont
@@ -32,6 +34,10 @@ def build(src, out, mapping, family):
             r.string = family.replace(" ", "") + "-Regular"
         elif r.nameID == 3:
             r.string = family.replace(" ", "")
+    # the author's licence file (OFL 1.1) travels with the font: say so in the name table, keep his copyright (id 0)
+    names = f["name"]
+    names.setName("This Font Software is licensed under the SIL Open Font License, Version 1.1.", 13, 3, 1, 0x409)
+    names.setName("https://openfontlicense.org", 14, 3, 1, 0x409)
     f.save(out)
 
 

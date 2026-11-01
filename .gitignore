@@ -2,3 +2,4 @@ assets/
 *.otf
 *.ttf
 !fonts/TengwarPUA.ttf
+!fonts/AurebeshPUA.otf

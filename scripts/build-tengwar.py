@@ -9,7 +9,8 @@ precomposed glyph per letter and vowel at U+F5200 + 5 * (the letter's place in T
 place in aeiou): the vowel mark has no width, which a terminal still gives a cell, so each syllable is one glyph.
 TENGWAR_LETTERS is read from ../hooks/register.tsx so the two cannot drift.
 
-Needs fontTools: nix shell nixpkgs#python3Packages.fonttools -c python3 build-tengwar.py ...
+Needs fontTools: 
+    nix shell --impure --expr 'with (builtins.getFlake "nixpkgs").legacyPackages.${builtins.currentSystem}; python3.withPackages (p: [ p.fonttools ])' -c python3 build-tengwar.py ...
 """
 import os
 import re
