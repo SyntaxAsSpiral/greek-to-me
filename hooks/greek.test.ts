@@ -124,3 +124,14 @@ test('stickyPeek: the previous peek stays until the next arrives, and only an em
   expect(stickyPeek([], ['$ old', '  more'])).toEqual(['$ old', '  more'])
   expect(stickyPeek([], [])).toEqual(['…'])
 })
+
+test('grimdark: 26 distinct one-cell signs, none an emoji, case folds', () => {
+  const f = byMap(buildMap('grimdark')!)
+  const signs = [...'abcdefghijklmnopqrstuvwxyz'].map(f)
+  expect(new Set(signs).size).toBe(26)
+  for (const s of signs) {
+    expect([...s].length).toBe(1)
+    expect(/\p{Emoji_Presentation}/u.test(s)).toBe(false) // an emoji would be two cells wide
+  }
+  expect(f('aE_1')).toBe('☠⚙_1')
+})

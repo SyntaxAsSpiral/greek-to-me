@@ -26,6 +26,7 @@ Then open `/config` and set the `script` row of greek-to-me. `traces` (on by def
 | `klingon` | pIqaD, CSUR U+F8D0 | Unifont CSUR |
 | `quenya` | Tengwar written as Quenya is: consonants as letters, each vowel a tehta on the *next* consonant (or a carrier) | `TengwarPUA.ttf`, shipped in `fonts/` |
 | `tengwar` | the same Tengwar, written the way English and Sindarin often are: each vowel a tehta on the consonant *before* it (or a carrier) | `TengwarPUA.ttf`, shipped in `fonts/` |
+| `grimdark` | a skull, cog, cross and ankh among the letters, alchemical elements and Elder Futhark runes for the rest. The only single-cell skull is ☠, so there is one | Noto Sans Symbols or Symbola (alchemical), DejaVu Sans, a runic font |
 | `hiero` | the Egyptian uniliteral signs | Noto Sans Egyptian Hieroglyphs |
 | `maya` | one fixed glyph per character, from Maya.otf (U+F6200..F6847); not real Maya writing | Maya.otf |
 | `aurebesh` | Aurebesh | `AurebeshPUA.otf`, built below |

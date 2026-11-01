@@ -18,6 +18,9 @@ const alphabets: Record<string, { lower: string; upper?: string; digits?: string
   malayalam: { lower: 'അബചദഎഫഗഹഇജകലമനഒപഖരസതഉവഴഷയശ' },
   // Arabic letters in their separate forms: a terminal neither joins them nor runs them right to left
   arabic: { lower: 'ابثدعفغهيجكلمنوضقرستظزصحطذ' },
+  // Grimdark: a skull, a cog, a cross and an ankh for the vowels you meet most, the elements of alchemy and
+  // the Elder Futhark for the rest. All one cell wide and none of them an emoji; the only single-cell skull is U+2620.
+  grimdark: { lower: '☠ᛒ🜂ᛞ⚙ᚠ🜃ᚺ✠🜄ᚲᛚᛗᚾ☥ᛈ🜔ᚱᛊᛏ⚜🜍ᚹ⚔⛧🜏' },
   // Egyptian uniliteral signs (Noto Sans Egyptian Hieroglyphs)
   hiero: { lower: '𓄿𓃀𓎡𓂧𓇋𓆑𓎼𓉔𓇋𓆓𓎡𓃭𓅓𓈖𓂝𓊪𓈎𓂋𓋴𓏏𓅱𓆑𓅱𓐍𓇌𓊃' },
   // pIqaD, ConScript Unicode Registry U+F8D0..
