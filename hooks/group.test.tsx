@@ -64,6 +64,8 @@ test('collapsed Write, Edit and NotebookEdit rows stay in Latin, a collapsed Bas
 })
 
 test('a group of shell commands is drawn by the mod, a mixed group is left to the engine', { options: { script: 'greek' } }, async ($, on) => {
+  on('clock.now', async () => ({ value: 0 }))
+  on('clock.every', async () => ({ value: undefined }))
   const reached: string[] = []
   on('ui.render', ($: any, e: any) => {
     reached.push(e.requestId)
@@ -84,6 +86,8 @@ test('a group of shell commands is drawn by the mod, a mixed group is left to th
 })
 
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
+  on('clock.now', async () => ({ value: 0 }))
+  on('clock.every', async () => ({ value: undefined }))
   on('ui.render', ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
@@ -125,4 +129,25 @@ test('a custom alphabet of the wrong length falls back to greek', { options: { s
 
 test('a good custom alphabet is used', { options: { script: 'custom', alphabet: 'zyxwvutsrqponmlkjihgfedcba' } }, async ($, on) => {
   expect(await drawnCommand($, on)).toBe('oh') // l is o, s is h
+})
+
+test('a shell group carries its own clock and the background-key note while it runs', { options: { script: 'greek' } }, async ($, on) => {
+  let now = 1000
+  on('clock.now', async () => ({ value: now }))
+  on('clock.every', async () => ({ value: undefined }))
+  const props = (isActive: boolean) => ({
+    isActive, isExpanded: false, isCallsOnly: true,
+    calls: [{ tool: 'Bash', input: { command: 'ls' }, isRunning: isActive, isErrored: false, isInterrupted: false }],
+  })
+  const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(true) })
+  const running = JSON.stringify(await ui.find({ type: 'Text' }))
+  expect(running).toContain('0s')
+  expect(running).toContain('ctrl+b to run in background')
+  await ui.unmount()
+  now = 6500
+  const ui2 = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(false) })
+  const done = JSON.stringify(await ui2.find({ type: 'Text' }))
+  expect(done).toContain('(5s)')
+  expect(done).not.toContain('run in background')
+  await ui2.unmount()
 })

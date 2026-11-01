@@ -1,4 +1,6 @@
+import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
+import type { Tick } from '../types'
 
 const LATIN = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -281,6 +283,45 @@ export const greekify = (text: string, tf: Transform, keep: Set<string>): string
   return out.join('\n')
 }
 
+// The key that sends a running call to the background (the action task:background), as the person has bound it:
+// Claude Code's defaults, less any the keybindings file unbinds, and the keys it adds. Claude Code's own rows say
+// "ctrl+b to run in background"; a group the mod draws says it again, with whatever is set here.
+const BACKGROUND_DEFAULTS = ['ctrl+b', 'ctrl+x ctrl+b']
+export const backgroundKey = (keybindingsJson: string | undefined): string | null => {
+  let keys = [...BACKGROUND_DEFAULTS]
+  const added: string[] = []
+  try {
+    const blocks = (JSON.parse(keybindingsJson ?? '{}') as { bindings?: unknown }).bindings
+    for (const block of Array.isArray(blocks) ? blocks : []) {
+      if (!block || (block.context !== 'Task' && block.context !== 'Global')) continue
+      for (const [key, action] of Object.entries((block.bindings ?? {}) as Record<string, unknown>)) {
+        const k = key.trim().toLowerCase()
+        if (action === 'task:background') added.push(k)
+        else if (action === null) keys = keys.filter(d => d !== k)
+      }
+    }
+  } catch {}
+  return added[0] ?? keys[0] ?? null
+}
+
+// 14s, then 1:05, like the spinner's readout
+export const clockText = (seconds: number): string => {
+  const s = Math.max(0, Math.floor(seconds))
+  return s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
+}
+
+// Reads the person's keybindings file, if there is one, for the key that runs a call in the background.
+const readBackgroundKey = async ($: any): Promise<string | null> => {
+  try {
+    const home = await $.env.get('HOME')
+    return backgroundKey(home ? await $.fs.read(`${home}/.claude/keybindings.json`) : undefined)
+  } catch {
+    return backgroundKey(undefined) // no file: Claude Code's defaults
+  }
+}
+
+const tickAtom = atom({ plugin: 'greek-to-me', key: 'tick' } as const, 0 as Tick)
+
 export const register: Register = (on, options) => {
   const script = String(options.script ?? 'greek')
   const keep = new Set(
@@ -297,6 +338,11 @@ export const register: Register = (on, options) => {
 
   const traces = options.traces !== false && tf !== null
   let lastPeek: string[] = [] // the latest command's peek, kept while the next one's input arrives
+  // each folded group's own clock: the group row is drawn here, so the engine's timer is not. A tick every second
+  // redraws the live ones through tickAtom, and stops once none is running
+  const clocks = new Map<string, { start: number; end?: number }>()
+  let ticker: { cancel: () => void } | null = null
+  let bgKey: string | null = backgroundKey(undefined)
   const safe = tf ? ansiSafe(tf) : null
 
   // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
@@ -313,13 +359,43 @@ export const register: Register = (on, options) => {
     return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
   })
 
-  on('ui.render', { component: 'ToolGroup' }, ($, e, next) => {
+  on('session.start', async ($, e, next) => {
+    bgKey = await readBackgroundKey($)
+    return next(e)
+  })
+  on('turn.start', async ($, e, next) => {
+    bgKey = await readBackgroundKey($) // a keybindings change shows from the next turn
+    return next(e)
+  })
+
+  on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
     const p = e.props
     if (!traces || !safe || p.isExpanded || p.isCallsOnly === false) return next(e)
     if (!p.calls.every(c => SCRIPT_GROUP_TOOLS.has(c.tool))) return next(e)
+    await read($, tickAtom) // the one-second tick redraws a running group
     const { Box, Text } = $.ui.resolve(e)
     const last = p.calls[p.calls.length - 1]
-    const summary = groupSummary(p.calls, p.isActive)
+    const now = await $.clock.now()
+    const id = String(e.requestId)
+    let clock = clocks.get(id)
+    if (p.isActive && !clock) {
+      clock = { start: now }
+      clocks.set(id, clock)
+      if (clocks.size > 200) clocks.delete(clocks.keys().next().value!)
+    }
+    if (!p.isActive && clock && clock.end === undefined) clock.end = now
+    if (p.isActive && !ticker) {
+      ticker = $.clock.every(1000, async () => {
+        await update($, tickAtom, (n: Tick): Tick => n + 1)
+        if (![...clocks.values()].some(c => c.end === undefined)) {
+          ticker?.cancel()
+          ticker = null
+        }
+      })
+    }
+    const secs = clock ? ((clock.end ?? now) - clock.start) / 1000 : null
+    const note = p.isActive && bgKey ? ` · ${bgKey} to run in background` : ''
+    const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)}${note})`)
     if (!p.isActive || !last) {
       lastPeek = []
       return <Text>{summary}</Text>
@@ -339,6 +415,7 @@ export const register: Register = (on, options) => {
       </Box>
     )
   })
+
 
   // code in a reply is left alone unless the replies setting is on; the tool traces are the point
   if (options.replies === true) on('ui.render', { component: 'AssistantMessage' }, ($, e, next) => {

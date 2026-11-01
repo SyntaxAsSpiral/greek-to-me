@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
+import { backgroundKey, clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -115,4 +115,27 @@ test('customMap: 26 characters map a to z, 52 give the capitals their own, space
   expect(customMap('abc')).toBeNull()
   expect(customMap('')).toBeNull()
   expect(customMap(lower + 'x')).toBeNull()
+})
+
+test('backgroundKey: Claude Code\'s default, a rebinding, an unbinding, and a file that is missing or not json', () => {
+  expect(backgroundKey(undefined)).toBe('ctrl+b')
+  expect(backgroundKey('not json')).toBe('ctrl+b')
+  expect(backgroundKey('{"bindings":[]}')).toBe('ctrl+b')
+  const moved = { bindings: [{ context: 'Task', bindings: { 'ctrl+b': null, 'ctrl+g': 'task:background' } }] }
+  expect(backgroundKey(JSON.stringify(moved))).toBe('ctrl+g') // the key that was added wins
+  const chord = { bindings: [{ context: 'Global', bindings: { 'ctrl+x b': 'task:background' } }] }
+  expect(backgroundKey(JSON.stringify(chord))).toBe('ctrl+x b')
+  const other = { bindings: [{ context: 'Chat', bindings: { 'ctrl+b': null, 'ctrl+g': 'task:background' } }] }
+  expect(backgroundKey(JSON.stringify(other))).toBe('ctrl+b') // task:background does nothing outside Task and Global
+  const unbound = { bindings: [{ context: 'Task', bindings: { 'ctrl+b': null, 'ctrl+x ctrl+b': null } }] }
+  expect(backgroundKey(JSON.stringify(unbound))).toBeNull()
+  const chat = { bindings: [{ context: 'Chat', bindings: { 'ctrl+b': null } }] }
+  expect(backgroundKey(JSON.stringify(chat))).toBe('ctrl+b') // unbinding in another context leaves Task's default
+})
+
+test('clockText: seconds, then minutes and seconds', () => {
+  expect(clockText(0)).toBe('0s')
+  expect(clockText(14.9)).toBe('14s')
+  expect(clockText(65)).toBe('1:05')
+  expect(clockText(-3)).toBe('0s')
 })
