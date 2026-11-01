@@ -100,13 +100,13 @@ test('a group whose latest call has no input yet draws a quiet ellipsis, not the
   await ui.unmount()
 })
 
-test('capLines keeps five rows and says how many it cut', () => {
+test('capLines keeps seven rows and says how many it cut', () => {
   expect(capLines('a\nb\nc')).toBe('a\nb\nc')
-  expect(capLines('1\n2\n3\n4\n5\n')).toBe('1\n2\n3\n4\n5\n')
-  expect(capLines('1\n2\n3\n4\n5\n6\n7\n8')).toBe('1\n2\n3\n4\n5\n… +3 lines')
+  expect(capLines('1\n2\n3\n4\n5\n6\n7\n')).toBe('1\n2\n3\n4\n5\n6\n7\n')
+  expect(capLines('1\n2\n3\n4\n5\n6\n7\n8\n9')).toBe('1\n2\n3\n4\n5\n6\n7\n… +2 lines')
 })
 
-test('a long collapsed Write row is cut to five rows, in Latin; expanded it is whole', { options: { script: 'greek' } }, async ($, on) => {
+test('a long collapsed Write row is cut to seven rows, in Latin; expanded it is whole', { options: { script: 'greek' } }, async ($, on) => {
   const seen: Record<string, string> = {}
   on('ui.render', ($: any, e: any) => {
     seen[e.props.isExpanded ? 'expanded' : 'collapsed'] = e.props.input?.content
@@ -121,7 +121,7 @@ test('a long collapsed Write row is cut to five rows, in Latin; expanded it is w
     })
     await ui.unmount()
   }
-  expect(seen.collapsed).toBe('line 1\nline 2\nline 3\nline 4\nline 5\n… +7 lines')
+  expect(seen.collapsed).toBe('line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\n… +5 lines')
   expect(seen.expanded).toBe(content)
 })
 
