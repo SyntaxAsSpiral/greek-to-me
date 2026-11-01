@@ -1,12 +1,12 @@
 {
   "name": "greek-to-me",
-  "version": "0.4.0",
-  "description": "It's all Greek to me: tool-call traces drawn in Greek, Tolkien's Quenya, Tengwar or Cirth, Klingon, Aurebesh or a grimdark script of the mod's own, or in an alphabet you supply, instead of Latin.",
+  "version": "0.4.1",
+  "description": "It's all Greek to me: the shell commands in Claude Code's tool-call peeks are drawn in Greek, Tolkien's Quenya, Tengwar or Cirth, Klingon, Aurebesh or a grimdark script of the mod's own, or an alphabet you supply, instead of Latin.",
   "userConfig": {
     "script": {
       "type": "string",
       "title": "Script",
-      "description": "What the code is drawn in. greek is the default. quenya, tengwar, cirth and klingon use private-use codepoints and aurebesh a plane-15 copy of the font, which ship in fonts/ and need installing; grimdark needs a font with alchemical symbols. custom uses the alphabet below, in any font you have. A script the mod no longer has falls back to greek.",
+      "description": "What shell commands are drawn in. greek is the default. quenya, tengwar, cirth and klingon use private-use codepoints and aurebesh a plane-15 copy of the font, which ship in fonts/ and need installing; grimdark needs a font with alchemical symbols. custom uses the alphabet below, in any font you have. A script the mod no longer has falls back to greek.",
       "default": "greek",
       "options": [
         "greek",
@@ -35,7 +35,7 @@
     "traces": {
       "type": "boolean",
       "title": "Tool traces",
-      "description": "Also draw the code in tool calls and their results (commands, file content, edits, output) in the chosen script. Names and paths stay readable.",
+      "description": "Draw shell commands, in the peek of a running call and in their collapsed rows, in the chosen script. Names and paths stay readable. Other tools are never drawn in script.",
       "default": true
     },
     "replies": {

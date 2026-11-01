@@ -177,15 +177,13 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
 // Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
-// Tools whose folded groups the mod may draw itself, in the script. A group holding any other tool is left to the
-// engine and its own truncation. Add a tool here only if its calls carry code worth showing and groupPreview can
-// show it; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from being drawn here.
+// The tools the mod draws in script: their folded groups, and their collapsed rows. Every other tool, and a group
+// holding any other tool, is left to the engine, in Latin and with its own truncation: what a Write or an Edit puts
+// in a file, for one, is worth reading as it is. Add a tool here only if its calls are shell commands, or carry code
+// groupPreview can show; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from it.
 export const SCRIPT_GROUP_TOOLS = new Set(['Bash'])
-
-// Tools whose collapsed rows stay in Latin: what a Write, an Edit or a NotebookEdit puts in a file is worth reading as it is.
-export const LATIN_TOOLS = new Set(['Write', 'Edit', 'NotebookEdit'])
-const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
-const OUTPUT_KEYS = new Set(['stdout', 'stderr', 'content', 'oldString', 'newString', 'old_string', 'new_string', 'lines', 'new_source'])
+const INPUT_KEYS = new Set(['command'])
+const OUTPUT_KEYS = new Set(['stdout', 'stderr'])
 
 // ANSI colour codes in a result must survive: transform the text between them only.
 const ANSI = /(\x1b\[[0-9;?]*[ -/]*[@-~])/
@@ -315,7 +313,7 @@ export const register: Register = (on, options) => {
 
   // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
   on('ui.render', { component: 'ToolUse' }, ($, e, next) => {
-    if (!traces || !safe || e.props.isExpanded || LATIN_TOOLS.has(e.props.tool)) return next(e)
+    if (!traces || !safe || e.props.isExpanded || !SCRIPT_GROUP_TOOLS.has(e.props.tool)) return next(e)
     const p = e.props
     const props = { ...p, input: mapDeep(p.input, INPUT_KEYS, safe) }
     if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, safe)
@@ -323,7 +321,7 @@ export const register: Register = (on, options) => {
   })
 
   on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
-    if (!traces || !safe || e.props.isExpanded || LATIN_TOOLS.has(e.props.tool)) return next(e)
+    if (!traces || !safe || e.props.isExpanded || !SCRIPT_GROUP_TOOLS.has(e.props.tool)) return next(e)
     return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
   })
 
