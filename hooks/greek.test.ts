@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview } from './register'
+import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -96,10 +96,14 @@ test('maya: only full-width signs, never a zero-width mark, and stable per chara
   expect(maya('aa')).toBe(maya('a') + maya('a'))
 })
 
-test('group preview: up to five lines, then an ellipsis on the last', () => {
+test('group preview: every line is previewed, with the first marked as a command', () => {
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
   expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toEqual(['$ λσ', '  λσ', '  λσ'])
-  const many = groupPreview({ tool: 'Bash', input: { command: Array(8).fill('ls').join('\n') } }, tf)
-  expect(many.length).toBe(5)
-  expect(many[4]).toBe('  λσ …')
+})
+test('wrapRows: a long line wraps into rows, capped, with an ellipsis on the last kept one', () => {
+  expect(wrapRows(['abcdefghij'], 4, 5)).toEqual(['abcd', 'efgh', 'ij'])
+  expect(wrapRows(['a', 'b'], 4, 5)).toEqual(['a', 'b'])
+  const out = wrapRows(['x'.repeat(30)], 10, 2)
+  expect(out.length).toBe(2)
+  expect(out[1]).toBe('xxxxxxxx …')
 })

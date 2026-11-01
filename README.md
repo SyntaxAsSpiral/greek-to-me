@@ -1,6 +1,8 @@
 # greek-to-me
 
-It's all Greek to me. A mod for Claude Code that draws the code blocks in a reply in another script instead of Latin: Greek by default, or runic, braille, Klingon pIqaD, Quenya (Tengwar), Egyptian hieroglyphs, Maya glyphs or Aurebesh. Fences tagged `markdown`, `md` or `json` stay readable. The code in tool calls and their results is drawn the same way: commands, file content, edit strings and output, with tool names and file paths left readable and ANSI colours kept. A folded run of calls that includes a shell command is drawn by the mod too, with its latest command in the script while it runs. Expand a row (ctrl+o) and you get the real code. Only the drawing changes; the stored message is untouched, so ctrl+o shows the real code.
+It's all Greek to me. A mod for Claude Code that draws the code in tool-call traces in another script instead of Latin: Greek by default, or runic, braille, Klingon pIqaD, Quenya or Tengwar, Hebrew, katakana, Malayalam, Arabic, Egyptian hieroglyphs, Maya glyphs or Aurebesh.
+
+The traces are the collapsed peeks at what a tool is doing: the command in a `Bash(...)` row, file content and edit strings, and the output. A folded run of calls that includes a shell command ("Running 2 shell commands…") is drawn by the mod too, with the latest command beneath it, wrapped to up to five rows. Tool names and file paths stay readable and ANSI colours are kept. Expand a row (ctrl+o) and you get the real code. Code in the model's replies is left alone unless you turn on `replies`. Only the drawing changes; the stored message is untouched, so what the model read and what is saved never change.
 
 ## Install
 
@@ -8,7 +10,7 @@ It's all Greek to me. A mod for Claude Code that draws the code blocks in a repl
 /plugin install greek-to-me --marketplace SyntaxAsSpiral/greek-to-me
 ```
 
-Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fence languages left alone. `traces` (on by default) turns the tool-call rewriting off. The change applies to the next reply drawn.
+Then open `/config` and set the `script` row of greek-to-me. `traces` (on by default) turns the tool-trace rewriting off. `replies` (off by default) also draws fenced code in the model's replies, and `keep` lists the fence languages left alone when it does. The change applies to the next reply drawn.
 
 ## Scripts and fonts
 

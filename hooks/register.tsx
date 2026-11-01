@@ -203,16 +203,27 @@ export const groupSummary = (calls: readonly GroupCall[], active: boolean): stri
   const line = parts.join(', ')
   return (line.charAt(0).toUpperCase() + line.slice(1)) + (active ? '…' : '')
 }
-// Up to PREVIEW_LINES lines of the latest call; a command is cut there with an ellipsis, and each line is
-// cut to the row by its Text.
-const PREVIEW_LINES = 5
+// The lines of the latest call's preview; the group wraps them to the row and keeps PREVIEW_ROWS of them.
+const PREVIEW_ROWS = 5
+// Wrap lines into rows of at most width characters, and keep the first max rows; if more would follow, the
+// last kept row ends in an ellipsis. Script characters are one cell wide, so characters are cells.
+export const wrapRows = (lines: readonly string[], width: number, max: number): string[] => {
+  const rows: string[] = []
+  for (const line of lines) {
+    const chars = [...line]
+    if (chars.length === 0) rows.push('')
+    for (let i = 0; i < chars.length; i += width) rows.push(chars.slice(i, i + width).join(''))
+  }
+  if (rows.length <= max) return rows
+  const kept = rows.slice(0, max)
+  kept[max - 1] = [...kept[max - 1]!].slice(0, Math.max(0, width - 2)).join('') + ' …'
+  return kept
+}
+
 export const groupPreview = (call: GroupCall, tf: Transform): string[] => {
   const i = (call.input ?? {}) as Record<string, unknown>
   if (call.tool === 'Bash' && typeof i.command === 'string') {
-    const lines = i.command.split('\n')
-    const shown = lines.slice(0, PREVIEW_LINES).map((l, n) => (n === 0 ? '$ ' : '  ') + tf(l))
-    if (lines.length > PREVIEW_LINES) shown[shown.length - 1] += ' …'
-    return shown
+    return i.command.split('\n').map((l, n) => (n === 0 ? '$ ' : '  ') + tf(l))
   }
   if (typeof i.pattern === 'string') return [i.pattern]
   if (typeof i.file_path === 'string') return [i.file_path]
@@ -283,7 +294,8 @@ export const register: Register = (on, options) => {
     const last = p.calls[p.calls.length - 1]
     const summary = groupSummary(p.calls, p.isActive)
     if (!p.isActive || !last) return <Text>{summary}</Text>
-    const lines = groupPreview(last, safe)
+    const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
+    const lines = wrapRows(groupPreview(last, safe), room, PREVIEW_ROWS)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
@@ -296,7 +308,8 @@ export const register: Register = (on, options) => {
     )
   })
 
-  on('ui.render', { component: 'AssistantMessage' }, ($, e, next) => {
+  // code in a reply is left alone unless the replies setting is on; the tool traces are the point
+  if (options.replies === true) on('ui.render', { component: 'AssistantMessage' }, ($, e, next) => {
     if (!tf) return next(e)
     const text = greekify(e.props.text, tf, keep)
     return next({ ...e, props: { ...e.props, text } })
