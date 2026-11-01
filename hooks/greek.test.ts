@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows } from './register'
+import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -115,4 +115,10 @@ test('group preview: a call with no input yet, or none left, shows nothing, neve
   expect(groupPreview({ tool: 'Bash', input: { command: '   ' } }, tf)).toEqual([])
   expect(groupPreview({ tool: 'Grep', input: {} }, tf)).toEqual([])
   expect(groupPreview({ tool: 'Read', input: { file_path: '' } }, tf)).toEqual([])
+})
+
+test('stickyPeek: the previous peek stays until the next arrives, and only an empty group shows the ellipsis', () => {
+  expect(stickyPeek(['$ new'], ['$ old'])).toEqual(['$ new'])
+  expect(stickyPeek([], ['$ old', '  more'])).toEqual(['$ old', '  more'])
+  expect(stickyPeek([], [])).toEqual(['…'])
 })

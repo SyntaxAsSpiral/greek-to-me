@@ -220,6 +220,11 @@ export const wrapRows = (lines: readonly string[], width: number, max: number): 
   return kept
 }
 
+// While the latest call has no input yet (the next command is still streaming), keep the previous peek on screen
+// instead of blinking; only a group with nothing to show yet gets the quiet ellipsis.
+export const stickyPeek = (now: readonly string[], before: readonly string[]): string[] =>
+  now.length ? [...now] : before.length ? [...before] : ['…']
+
 export const groupPreview = (call: GroupCall, tf: Transform): string[] => {
   const i = (call.input ?? {}) as Record<string, unknown>
   if (call.tool === 'Bash' && typeof i.command === 'string' && i.command.trim() !== '') {
@@ -272,6 +277,7 @@ export const register: Register = (on, options) => {
   const tf: Transform | null = special[script] ?? (map ? byMap(map) : null)
 
   const traces = options.traces !== false && tf !== null
+  let lastPeek: string[] = [] // the latest command's peek, kept while the next one's input arrives
   const safe = tf ? ansiSafe(tf) : null
 
   // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
@@ -295,10 +301,14 @@ export const register: Register = (on, options) => {
     const { Box, Text } = $.ui.resolve(e)
     const last = p.calls[p.calls.length - 1]
     const summary = groupSummary(p.calls, p.isActive)
-    if (!p.isActive || !last) return <Text>{summary}</Text>
+    if (!p.isActive || !last) {
+      lastPeek = []
+      return <Text>{summary}</Text>
+    }
     const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
     const peek = groupPreview(last, safe)
-    const lines = wrapRows(peek.length ? peek : ['…'], room, PREVIEW_ROWS)
+    if (peek.length) lastPeek = peek
+    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
