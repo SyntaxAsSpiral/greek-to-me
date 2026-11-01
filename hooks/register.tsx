@@ -205,7 +205,11 @@ export const groupSummary = (calls: readonly GroupCall[], active: boolean): stri
 }
 export const groupPreview = (call: GroupCall, tf: Transform): string => {
   const i = (call.input ?? {}) as Record<string, unknown>
-  if (call.tool === 'Bash' && typeof i.command === 'string') return '$ ' + tf(i.command)
+  if (call.tool === 'Bash' && typeof i.command === 'string') {
+    // the first line only, with an ellipsis if more follows: the line is a preview and the Text cuts it to the row
+    const [first = '', ...rest] = i.command.split('\n')
+    return '$ ' + tf(first) + (rest.length ? ' …' : '')
+  }
   if (typeof i.pattern === 'string') return i.pattern
   if (typeof i.file_path === 'string') return i.file_path
   if (typeof i.path === 'string') return i.path
@@ -278,7 +282,7 @@ export const register: Register = (on, options) => {
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
-        <Text dimColor>{'  ⎿  ' + groupPreview(last, safe)}</Text>
+        <Text dimColor wrap="truncate-end">{'  ⎿  ' + groupPreview(last, safe)}</Text>
       </Box>
     )
   })

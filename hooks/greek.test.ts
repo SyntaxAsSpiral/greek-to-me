@@ -95,3 +95,9 @@ test('maya: only full-width signs, never a zero-width mark, and stable per chara
   }
   expect(maya('aa')).toBe(maya('a') + maya('a'))
 })
+
+test('group preview: a multi-line command is cut to its first line with an ellipsis', () => {
+  const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
+  expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toBe('$ λσ …')
+  expect(groupPreview({ tool: 'Bash', input: { command: 'ls' } }, tf)).toBe('$ λσ')
+})
