@@ -85,6 +85,9 @@ def build(src_path, out_dir):
         {
             "familyName": "Tengwar PUA",
             "styleName": "Regular",
+            # name IDs 4 and 6: without them a strict parser (fontdb in asciinema's agg) drops the font as having no family
+            "fullName": "Tengwar PUA",
+            "psName": "TengwarPUA-Regular",
             "copyright": nm(0),
             "licenseDescription": nm(13),
             "licenseInfoURL": nm(14) or "https://scripts.sil.org/OFL",
