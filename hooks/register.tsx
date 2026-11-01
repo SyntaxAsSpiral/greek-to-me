@@ -2,6 +2,8 @@ import type { Register } from 'claude-code'
 
 const LATIN = 'abcdefghijklmnopqrstuvwxyz'
 
+// The tables below (alphabets, pIqaD, Maya signs, Tengwar letters) are written by scripts/sync-tables.py from
+// esoscript.py in nix-os, which is their source of truth. Change them there, not here.
 const alphabets: Record<string, { lower: string; upper?: string; digits?: string }> = {
   // a b c d e f g h i j k l m n o p q r s t u v w x y z
   greek: {
@@ -76,12 +78,10 @@ const aurebesh: Transform = line =>
 // Quenya in Tengwar (CSUR): consonants are letters; a vowel is a tehta drawn on the
 // NEXT consonant, or on a short carrier when no consonant follows it.
 const Q_CONS: [string, number][] = [
-  ['qu', 0xe003], ['th', 0xe008], ['ng', 0xe006], ['nd', 0xe004], ['mb', 0xe005],
-  ['ch', 0xe00a], ['hw', 0xe00b],
-  ['t', 0xe000], ['p', 0xe001], ['c', 0xe002], ['k', 0xe002], ['q', 0xe003],
-  ['d', 0xe004], ['b', 0xe005], ['g', 0xe006], ['f', 0xe009], ['n', 0xe010],
-  ['m', 0xe011], ['v', 0xe015], ['w', 0xe017], ['s', 0xe020], ['z', 0xe021],
-  ['h', 0xe024], ['y', 0xe026], ['j', 0xe026], ['r', 0xe030], ['l', 0xe032],
+  ['qu', 0xe003], ['th', 0xe008], ['ng', 0xe006], ['nd', 0xe004], ['mb', 0xe005], ['ch', 0xe00a], ['hw', 0xe00b],
+  ['t', 0xe000], ['p', 0xe001], ['c', 0xe002], ['k', 0xe002], ['q', 0xe003], ['d', 0xe004], ['b', 0xe005],
+  ['g', 0xe006], ['f', 0xe009], ['n', 0xe010], ['m', 0xe011], ['v', 0xe015], ['w', 0xe017], ['s', 0xe020],
+  ['z', 0xe021], ['h', 0xe024], ['y', 0xe026], ['j', 0xe026], ['r', 0xe030], ['l', 0xe032],
 ]
 const Q_VOWELS: Record<string, number> = { a: 0xe040, e: 0xe046, i: 0xe044, o: 0xe04a, u: 0xe04c }
 const CARRIER = 0xe02c
