@@ -188,8 +188,8 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 // show it; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from being drawn here.
 export const SCRIPT_GROUP_TOOLS = new Set(['Bash'])
 
-// Tools whose collapsed rows stay in Latin: what a Write or an Edit puts in a file is worth reading as it is.
-export const LATIN_TOOLS = new Set(['Write', 'Edit'])
+// Tools whose collapsed rows stay in Latin: what a Write, an Edit or a NotebookEdit puts in a file is worth reading as it is.
+export const LATIN_TOOLS = new Set(['Write', 'Edit', 'NotebookEdit'])
 const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
 const OUTPUT_KEYS = new Set(['stdout', 'stderr', 'content', 'oldString', 'newString', 'old_string', 'new_string', 'lines', 'new_source'])
 

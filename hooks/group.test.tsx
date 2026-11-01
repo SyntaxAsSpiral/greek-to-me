@@ -37,16 +37,17 @@ test('a collapsed tool row is in the script, an expanded one is the real code', 
   expect(seen.expanded).toBe('ls -la')
 })
 
-test('collapsed Write and Edit rows stay in Latin, a collapsed Bash row does not', { options: { script: 'greek' } }, async ($, on) => {
+test('collapsed Write, Edit and NotebookEdit rows stay in Latin, a collapsed Bash row does not', { options: { script: 'greek' } }, async ($, on) => {
   const seen: Record<string, unknown> = {}
   on('ui.render', ($: any, e: any) => {
-    seen[e.props.tool] = e.props.input?.content ?? e.props.input?.new_string ?? e.props.input?.command
+    seen[e.props.tool] = e.props.input?.content ?? e.props.input?.new_string ?? e.props.input?.new_source ?? e.props.input?.command
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
   const rows: [string, Record<string, string>][] = [
     ['Write', { file_path: '/x', content: 'ls -la' }],
     ['Edit', { file_path: '/x', old_string: 'a', new_string: 'ls -la' }],
+    ['NotebookEdit', { notebook_path: '/x.ipynb', new_source: 'ls -la' }],
     ['Bash', { command: 'ls -la' }],
   ]
   for (const [tool, input] of rows) {
@@ -58,6 +59,7 @@ test('collapsed Write and Edit rows stay in Latin, a collapsed Bash row does not
   }
   expect(seen.Write).toBe('ls -la')
   expect(seen.Edit).toBe('ls -la')
+  expect(seen.NotebookEdit).toBe('ls -la')
   expect(seen.Bash).toBe('λσ -λα')
 })
 
