@@ -38,5 +38,16 @@
       "default": true
     }
   },
-  "license": "MIT"
+  "license": "MIT",
+  "author": {
+    "name": "SyntaxAsSpiral"
+  },
+  "repository": "https://github.com/SyntaxAsSpiral/greek-to-me",
+  "keywords": [
+    "theme",
+    "fun",
+    "scripts",
+    "code",
+    "terminal"
+  ]
 }

@@ -29,7 +29,10 @@ Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fe
 | `aurebesh` | Aurebesh | `AurebeshPUA.otf`, built below |
 | `off` | nothing | |
 
-Aurebesh has no Unicode block, and Tengwar's private-use home (U+E000) is claimed by Nerd Font icons. The two fonts below put those glyphs in plane 15 (U+F5000, U+F5100) where nothing else lives. The mod emits those codepoints, and your terminal falls back to the font that has them.
+Aurebesh has no Unicode block, and Tengwar's private-use home (U+E000) is claimed by Nerd Font icons, so both are drawn from fonts that put the glyphs in plane 15 (U+F5000, U+F5100), where nothing else lives. The mod emits those codepoints, and your terminal falls back to the font that has them.
+
+- **Tengwar** ships with the mod: `fonts/TengwarPUA.otf` (SIL OFL, from Unifont; see `fonts/NOTICE.md`). It also carries the Klingon glyphs. Copy it to `~/.local/share/fonts/` and run `fc-cache -f`, then restart your terminal.
+- **Aurebesh** and **Maya** are not open fonts, so the mod does not ship them. Use your own copies: for Maya, UFAS's `Maya.otf` (free for personal use only); for Aurebesh, build the mapped font from an `Aurebesh.otf` you have the right to use:
 
 ```
 nix shell nixpkgs#python3Packages.fonttools -c \
@@ -37,7 +40,7 @@ nix shell nixpkgs#python3Packages.fonttools -c \
 fc-cache -f
 ```
 
-The built fonts are not in this repository: Aurebesh.otf is yours to supply and Unifont is its own project.
+If you display a session remotely, install the fonts on the machine whose terminal draws it, not on the host that runs Claude Code.
 
 ## Try it
 

@@ -1,5 +1,13 @@
 {
   "name": "greek-to-me",
-  "owner": { "name": "SyntaxAsSpiral" },
-  "plugins": [{ "name": "greek-to-me", "source": "./" }]
+  "owner": {
+    "name": "SyntaxAsSpiral"
+  },
+  "plugins": [
+    {
+      "name": "greek-to-me",
+      "source": "./"
+    }
+  ],
+  "description": "greek-to-me: draw the code in Claude Code's replies and tool calls in Greek, runes, Tengwar, hieroglyphs and other scripts."
 }
