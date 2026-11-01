@@ -1,0 +1,31 @@
+{
+  "name": "greek-to-me",
+  "version": "0.1.0",
+  "description": "It's all Greek to me: code fences in replies are drawn in Greek (or runes, braille, pIqaD, Quenya, hieroglyphs, Maya...) instead of Latin.",
+  "userConfig": {
+    "script": {
+      "type": "string",
+      "title": "Script",
+      "description": "What code blocks are drawn in. klingon and quenya (Tengwar) use private-use codepoints, maya uses Maya.otf's, hiero needs an Egyptian Hieroglyphs font; each needs a font that has them. aurebesh needs assets/AurebeshPUA.otf installed.",
+      "default": "greek",
+      "options": [
+        "greek",
+        "runic",
+        "braille",
+        "klingon",
+        "quenya",
+        "hiero",
+        "aurebesh",
+        "maya",
+        "off"
+      ]
+    },
+    "keep": {
+      "type": "string",
+      "title": "Keep readable",
+      "description": "Comma-separated fence languages left alone.",
+      "default": "markdown,md,json"
+    }
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,5 @@
+{
+  "name": "greek-to-me",
+  "owner": { "name": "SyntaxAsSpiral" },
+  "plugins": [{ "name": "greek-to-me", "source": "./" }]
+}
