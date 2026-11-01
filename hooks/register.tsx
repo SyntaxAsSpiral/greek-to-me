@@ -354,7 +354,11 @@ export const register: Register = (on, options) => {
     const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
     if (!p.isActive || !last) {
       lastPeek = []
-      return <Text>{summary}</Text>
+      return (
+        <Box paddingTop={1}>
+          <Text>{summary}</Text>
+        </Box>
+      )
     }
     const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
     const peek = groupPreview(last, safe)
@@ -362,7 +366,7 @@ export const register: Register = (on, options) => {
     const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS)
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" paddingTop={1}>
         <Text>{summary}</Text>
         {rows.map((row, n) => (
           <Text key={String(n)} dimColor wrap="truncate-end">
