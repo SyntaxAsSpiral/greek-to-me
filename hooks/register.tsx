@@ -183,8 +183,8 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
 // Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
-// Tools whose collapsed rows stay in Latin: what a Write puts in a file is worth reading as it is.
-export const LATIN_TOOLS = new Set(['Write'])
+// Tools whose collapsed rows stay in Latin: what a Write or an Edit puts in a file is worth reading as it is.
+export const LATIN_TOOLS = new Set(['Write', 'Edit'])
 const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
 const OUTPUT_KEYS = new Set(['stdout', 'stderr', 'content', 'oldString', 'newString', 'old_string', 'new_string', 'lines', 'new_source'])
 
