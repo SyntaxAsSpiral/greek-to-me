@@ -131,7 +131,7 @@ test('a good custom alphabet is used', { options: { script: 'custom', alphabet: 
   expect(await drawnCommand($, on)).toBe('oh') // l is o, s is h
 })
 
-test('a shell group carries its own clock, and the background note only after five seconds', { options: { script: 'greek' } }, async ($, on) => {
+test('a shell group carries its own clock while it runs and when it is done', { options: { script: 'greek' } }, async ($, on) => {
   let now = 1000
   on('clock.now', async () => ({ value: now }))
   on('clock.every', async () => ({ value: undefined }))
@@ -139,19 +139,15 @@ test('a shell group carries its own clock, and the background note only after fi
     isActive, isExpanded: false, isCallsOnly: true,
     calls: [{ tool: 'Bash', input: { command: 'ls' }, isRunning: isActive, isErrored: false, isInterrupted: false }],
   })
-  // the summary row's text, and whether a row says how to run the call in the background
-  const draw = async (active: boolean) => {
+  const summary = async (active: boolean) => {
     const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(active) })
-    const summary = (await ui.find({ type: 'Text' }))?.text
-    const hint = (await ui.find({ type: 'Text', text: /to run in background/ })) !== undefined
+    const text = (await ui.find({ type: 'Text' }))?.text
     await ui.unmount()
-    return { summary, hint }
+    return text
   }
-  expect(await draw(true)).toEqual({ summary: 'Running 1 shell command… (0s)', hint: false })
-  now = 3000
-  expect((await draw(true)).hint).toBe(false) // two seconds: too soon
+  expect(await summary(true)).toBe('Running 1 shell command… (0s)')
   now = 7000
-  expect(await draw(true)).toEqual({ summary: 'Running 1 shell command… (6s)', hint: true }) // the default key, after six
+  expect(await summary(true)).toBe('Running 1 shell command… (6s)')
   now = 9500
-  expect(await draw(false)).toEqual({ summary: 'Ran 1 shell command (8s)', hint: false })
+  expect(await summary(false)).toBe('Ran 1 shell command (8s)')
 })

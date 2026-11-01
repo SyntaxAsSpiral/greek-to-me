@@ -283,52 +283,10 @@ export const greekify = (text: string, tf: Transform, keep: Set<string>): string
   return out.join('\n')
 }
 
-// The key that sends a running call to the background (the action task:background), as the person has bound it:
-// Claude Code's defaults, less any the keybindings file unbinds, and the keys it adds. Claude Code's own rows say
-// "ctrl+b to run in background"; a group the mod draws says it again, with whatever is set here.
-const BACKGROUND_DEFAULTS = ['ctrl+b', 'ctrl+x ctrl+b']
-export const backgroundKey = (keybindingsJson: string | undefined): string | null => {
-  let keys = [...BACKGROUND_DEFAULTS]
-  const added: string[] = []
-  try {
-    const blocks = (JSON.parse(keybindingsJson ?? '{}') as { bindings?: unknown }).bindings
-    for (const block of Array.isArray(blocks) ? blocks : []) {
-      if (!block || (block.context !== 'Task' && block.context !== 'Global')) continue
-      for (const [key, action] of Object.entries((block.bindings ?? {}) as Record<string, unknown>)) {
-        const k = key.trim().toLowerCase()
-        if (action === 'task:background') added.push(k)
-        else if (action === null) keys = keys.filter(d => d !== k)
-      }
-    }
-  } catch {}
-  return added[0] ?? keys[0] ?? null
-}
-
-// How the engine writes a key: alt for meta and option, ctrl for control (a binding of 'meta+b' reads 'alt+b')
-export const keyLabel = (key: string): string =>
-  key
-    .toLowerCase()
-    .split(' ')
-    .map(stroke => stroke.split('+').map(k => (k === 'meta' || k === 'opt' || k === 'option' ? 'alt' : k === 'control' ? 'ctrl' : k)).join('+'))
-    .join(' ')
-
-// The engine shows the background note only after a call has run a few seconds, at the end of the peek
-const BACKGROUND_HINT_AFTER_SECONDS = 5
-
 // 14s, then 1:05, like the spinner's readout
 export const clockText = (seconds: number): string => {
   const s = Math.max(0, Math.floor(seconds))
   return s < 60 ? `${s}s` : `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
-}
-
-// Reads the person's keybindings file, if there is one, for the key that runs a call in the background.
-const readBackgroundKey = async ($: any): Promise<string | null> => {
-  try {
-    const home = await $.env.get('HOME')
-    return backgroundKey(home ? await $.fs.read(`${home}/.claude/keybindings.json`) : undefined)
-  } catch {
-    return backgroundKey(undefined) // no file: Claude Code's defaults
-  }
 }
 
 const tickAtom = atom({ plugin: 'greek-to-me', key: 'tick' } as const, 0 as Tick)
@@ -353,7 +311,6 @@ export const register: Register = (on, options) => {
   // redraws the live ones through tickAtom, and stops once none is running
   const clocks = new Map<string, { start: number; end?: number }>()
   let ticker: { cancel: () => void } | null = null
-  let bgKey: string | null = backgroundKey(undefined)
   const safe = tf ? ansiSafe(tf) : null
 
   // an expanded row (ctrl+o, --verbose) shows the real code; the collapsed one is in the script
@@ -368,15 +325,6 @@ export const register: Register = (on, options) => {
   on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
     if (!traces || !safe || e.props.isExpanded || LATIN_TOOLS.has(e.props.tool)) return next(e)
     return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
-  })
-
-  on('session.start', async ($, e, next) => {
-    bgKey = await readBackgroundKey($)
-    return next(e)
-  })
-  on('turn.start', async ($, e, next) => {
-    bgKey = await readBackgroundKey($) // a keybindings change shows from the next turn
-    return next(e)
   })
 
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
@@ -415,7 +363,6 @@ export const register: Register = (on, options) => {
     if (peek.length) lastPeek = peek
     const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS)
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
-    if (bgKey && secs !== null && secs >= BACKGROUND_HINT_AFTER_SECONDS) rows.push(`     ${keyLabel(bgKey)} to run in background`)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
