@@ -1,6 +1,6 @@
 # greek-to-me
 
-It's all Greek to me. A Claude Code mod that draws shell commands in the live peek of a tool call in another script instead of Latin. Only shell commands: every other tool, and every permission prompt, stays in Latin, and ctrl+o shows the real text.
+It's all Greek to me. A Claude Code mod that draws shell commands and their output in another script instead of Latin. Only shell commands: every other tool, and every permission prompt, stays in Latin, and ctrl+o shows the real text.
 
 It is a wink, and it also helps: shell commands are the rows that are hardest to skim anyway (long one-liners, heredocs), and the complicated ones need expanding to be understood either way. In another script they stand apart, so you can see at a glance which to open. The live peek under a running command is temporary; when the call finishes it folds to a summary line.
 
@@ -8,7 +8,9 @@ It is a wink, and it also helps: shell commands are the rows that are hardest to
 /plugin install greek-to-me --marketplace SyntaxAsSpiral/greek-to-me
 ```
 
-Set `script` in `/config`: `greek` (default), `quenya`, `tengwar`, `cirth`, `klingon`, `aurebesh`, `grimdark`, `custom` or `off`. The Tengwar, Cirth, Klingon and Aurebesh glyphs are private-use codepoints, so install `fonts/TengwarPUA.ttf` and `fonts/AurebeshPUA.otf` (SIL OFL, see `fonts/NOTICE.md`) on the machine whose terminal draws them, then restart the terminal.
+Set `script` in `/config`: `greek` (default), `quenya`, `tengwar`, `cirth`, `klingon`, `aurebesh`, `grimdark`, `custom` or `off`. `quenya`, `tengwar`, `cirth`, `klingon` and `aurebesh` are drawn in private-use codepoints, so install `fonts/TengwarPUA.ttf` and `fonts/AurebeshPUA.otf` on the machine whose terminal draws them, then restart the terminal. `grimdark` needs a font with alchemical symbols.
+
+Font licences and trademarks: see `fonts/NOTICE.md`.
 
 ## Your own alphabet
 

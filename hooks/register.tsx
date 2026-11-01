@@ -42,7 +42,7 @@ type Transform = (line: string) => string
 const byMap = (map: Map<string, string>): Transform => line =>
   [...line].map(c => map.get(c) ?? c).join('')
 
-// Aurebesh keeps its glyphs at plain ASCII, so assets/AurebeshPUA.otf (Aurebesh.otf with
+// Aurebesh keeps its glyphs at plain ASCII, so fonts/AurebeshPUA.otf (Aurebesh.otf with
 // every printable ASCII glyph also at U+F5000 + ascii) is what makes this mode drawable.
 const aurebesh: Transform = line =>
   [...line].map(c => (/[A-Za-z0-9]/.test(c) ? String.fromCodePoint(0xf5000 + c.charCodeAt(0)) : c)).join('')
@@ -59,7 +59,7 @@ const Q_VOWELS: Record<string, number> = { a: 0xe040, e: 0xe046, i: 0xe044, o: 0
 const CARRIER = 0xe02c
 
 // Tengwar sits at CSUR U+E000, which Nerd Fonts claim for icons, so it is drawn from
-// assets/TengwarPUA.otf: the same glyphs moved to U+F5100 + (cp - U+E000).
+// fonts/TengwarPUA.ttf: the same glyphs moved to U+F5100 + (cp - U+E000).
 const T = (...cps: number[]): string => String.fromCodePoint(...cps.map(c => c - 0xe000 + 0xf5100))
 
 // A vowel is a tiny mark with no width, which a terminal still gives a cell of its own, so each letter with

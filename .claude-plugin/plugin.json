@@ -1,6 +1,6 @@
 {
   "name": "greek-to-me",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "It's all Greek to me: the shell commands in Claude Code's tool-call peeks are drawn in Greek, Tolkien's Quenya, Tengwar or Cirth, Klingon, Aurebesh or a grimdark script of the mod's own, or an alphabet you supply, instead of Latin.",
   "userConfig": {
     "script": {
@@ -35,7 +35,7 @@
     "traces": {
       "type": "boolean",
       "title": "Tool traces",
-      "description": "Draw shell commands, in the peek of a running call and in their collapsed rows, in the chosen script. Names and paths stay readable. Other tools are never drawn in script.",
+      "description": "Draw shell commands and their output, in the peek of a running call and in their collapsed rows, in the chosen script. Names and paths stay readable. Other tools are never drawn in script.",
       "default": true
     },
     "replies": {

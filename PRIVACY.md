@@ -12,4 +12,4 @@ greek-to-me does not collect, store or send any data about you.
 
 All of the plugin's code is in `hooks/register.tsx`, which `hooks/hooks.json` declares as a hooks module. It runs inside Claude Code's mod runtime and uses only the rendering hooks (`ui.render` on assistant messages, tool rows, tool results and folded tool groups) and the engine's drawing helpers. It declares no MCP servers and runs no shell commands.
 
-`scripts/build-fonts.py` is a helper you run yourself, by hand, to build two fonts from font files you supply. The plugin never runs it.
+The files in `scripts/` (`build-fonts.py`, `build-tengwar.py`, `sync-tables.py`) are helpers you run yourself, by hand: two build the fonts from font files you supply, and one copies the letter tables into the mod. The plugin never runs them.
