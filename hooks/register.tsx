@@ -160,16 +160,20 @@ const CIRTH_CSUR = [
 const cirth: Transform = line =>
   [...line].map(c => (/[A-Za-z]/.test(c) ? T(CIRTH_CSUR[c.toLowerCase().charCodeAt(0) - 97]!) : c)).join('')
 
-// The open slot: an alphabet of your own, a to z (26 characters), then optionally the capitals (26 more), in any
-// font the terminal has. Spaces are ignored. Anything else gives null, and the mod falls back to greek.
+// The open slot: an alphabet of your own, a to z (26 characters), then optionally the capitals (26 more) and the
+// digits 0 to 9 (10 more, last), in any font the terminal has. Spaces are ignored. Anything else gives null, and the
+// mod falls back to greek. So 26, 36 (letters + digits), 52 (+ capitals) or 62 (all three).
 export const customMap = (alphabet: string): Map<string, string> | null => {
   const chars = [...alphabet.replace(/\s/g, '')]
-  if (chars.length !== 26 && chars.length !== 52) return null
+  const n = chars.length
+  if (n !== 26 && n !== 36 && n !== 52 && n !== 62) return null
+  const caps = n >= 52
   const m = new Map<string, string>()
   ;[...LATIN].forEach((c, i) => {
     m.set(c, chars[i]!)
-    m.set(c.toUpperCase(), chars[chars.length === 52 ? 26 + i : i]!)
+    m.set(c.toUpperCase(), chars[caps ? 26 + i : i]!)
   })
+  if (n === 36 || n === 62) chars.slice(n - 10).forEach((d, i) => m.set(String(i), d))
   return m
 }
 

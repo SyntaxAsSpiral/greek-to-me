@@ -59,8 +59,9 @@ for name in eso.ORDER:
         continue
     letters = eso.ALPHABETS[name][0] if name in eso.ALPHABETS else "".join(chr(c) for c in eso.BLOCKS[name])
     assert len([*letters]) == 26, (name, len([*letters]))
-    rows.append(f"| {name} | `{letters}` | {eso.FONTS.get(name) or 'any font with it'} |")
-table = "| Script | Alphabet, a to z | Font |\n|---|---|---|\n" + "\n".join(rows)
+    digits = eso.DIGITS.get(name, "")  # scripts with a numeral per digit; braille and maya number in runs, not here
+    rows.append(f"| {name} | `{letters}{digits}` | {eso.FONTS.get(name) or 'any font with it'} |")
+table = "| Script | Alphabet, a to z, then digits where it has them | Font |\n|---|---|---|\n" + "\n".join(rows)
 readme = os.path.join(here, "..", "README.md")
 doc = open(readme, encoding="utf8").read()
 new, n = re.subn(r"(<!-- alphabets -->\n).*?(<!-- /alphabets -->)", lambda m: m[1] + table + "\n" + m[2], doc, count=1, flags=re.S)

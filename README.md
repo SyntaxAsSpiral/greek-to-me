@@ -12,17 +12,17 @@ Set `script` in `/config`: `greek` (default), `quenya`, `tengwar`, `cirth`, `kli
 
 ## Your own alphabet
 
-`script` = `custom` and 26 characters (a to z; 52 adds the capitals) in the `alphabet` row. One cell wide each, any font you have. A wrong length falls back to greek. Some to paste in:
+`script` = `custom` and 26 characters (a to z) in the `alphabet` row; add the 26 capitals, the ten digits 0 to 9 at the very end, or both (26, 36, 52 or 62 in all). One cell wide each, any font you have. A wrong length falls back to greek. Some to paste in:
 
 <!-- alphabets -->
-| Script | Alphabet, a to z | Font |
+| Script | Alphabet, a to z, then digits where it has them | Font |
 |---|---|---|
 | runic | `ᚨᛒᚲᛞᛖᚠᚷᚺᛁᛃᚲᛚᛗᚾᛟᛈᚲᚱᛊᛏᚢᚢᚹᛉᛃᛉ` | any font with it |
 | braille | `⠁⠃⠉⠙⠑⠋⠛⠓⠊⠚⠅⠇⠍⠝⠕⠏⠟⠗⠎⠞⠥⠧⠺⠭⠽⠵` | any font with it |
 | hebrew | `אבכדעפגהישקלמנופקרסתטווצחז` | any font with it |
 | katakana | `ｱﾊｾﾄｴﾌｹﾍｲｼｶﾘﾏﾅｵﾎｸﾗｻﾀｳﾋﾜｽﾔｿ` | any font with it |
-| malayalam | `അബചദഎഫഗഹഇജകലമനഒപഖരസതഉവഴഷയശ` | any font with it |
-| arabic | `ابثدعفغهيجكلمنوضقرستظزصحطذ` | any font with it |
+| malayalam | `അബചദഎഫഗഹഇജകലമനഒപഖരസതഉവഴഷയശ൦൧൨൩൪൫൬൭൮൯` | any font with it |
+| arabic | `ابثدعفغهيجكلمنوضقرستظزصحطذ٠١٢٣٤٥٦٧٨٩` | any font with it |
 | hiero | `𓄿𓃀𓎡𓂧𓇋𓆑𓎼𓉔𓇋𓆓𓎡𓃭𓅓𓈖𓂝𓊪𓈎𓂋𓋴𓏏𓅱𓆑𓅱𓐍𓇌𓊃` | Noto Sans Egyptian Hieroglyphs |
 | ogham | `ᚐᚁᚉᚇᚓᚃᚌᚆᚔᚉᚉᚂᚋᚅᚑᚊᚊᚏᚄᚈᚒᚃᚒᚎᚔᚎ` | DejaVu Sans |
 | gothic | `𐌰𐌱𐌺𐌳𐌴𐍆𐌲𐌷𐌹𐌾𐌺𐌻𐌼𐌽𐍉𐍀𐌵𐍂𐍃𐍄𐌿𐍅𐍅𐍇𐌾𐌶` | Noto Sans Gothic |

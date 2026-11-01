@@ -117,6 +117,17 @@ test('customMap: 26 characters map a to z, 52 give the capitals their own, space
   expect(customMap(lower + 'x')).toBeNull()
 })
 
+test('customMap: ten more characters at the end are the digits 0 to 9, with or without the capitals', () => {
+  const lower = 'ᚨᛒᚲᛞᛖᚠᚷᚺᛁᛃᚲᛚᛗᚾᛟᛈᚲᚱᛊᛏᚢᚢᚹᛉᛃᛉ'
+  const digits = '٠١٢٣٤٥٦٧٨٩'
+  expect(byMap(customMap(lower + digits)!)('a 042 A')).toBe('ᚨ ٠٤٢ ᚨ')
+  const all = byMap(customMap(lower + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + digits)!)
+  expect(all('aA9')).toBe('ᚨA٩')
+  expect(byMap(customMap(lower)!)('9')).toBe('9') // no digits given: left as they are
+  expect(customMap(lower + digits + 'x')).toBeNull()
+  expect(customMap(lower + '12345')).toBeNull()
+})
+
 test('clockText: seconds, then minutes and seconds', () => {
   expect(clockText(0)).toBe('0s')
   expect(clockText(14.9)).toBe('14s')
