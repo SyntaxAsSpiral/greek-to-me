@@ -124,3 +124,31 @@ test('a long collapsed Write row is cut to five rows, in Latin; expanded it is w
   expect(seen.collapsed).toBe('line 1\nline 2\nline 3\nline 4\nline 5\n… +7 lines')
   expect(seen.expanded).toBe(content)
 })
+
+// what a collapsed Bash row's command reaches the engine as, under the given options
+const drawnCommand = async ($: any, on: any): Promise<unknown> => {
+  let seen: unknown
+  on('ui.render', ($: any, e: any) => {
+    seen = e.props.input?.command
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const ui = await $.ui.mount({
+    plugin: 'greek-to-me', surface: 'terminal', component: 'ToolUse', requestId: 'fb',
+    props: { tool_use_id: 'fb', tool: 'Bash', input: { command: 'ls' }, isRunning: false, isErrored: false, isInterrupted: false, isExpanded: false },
+  })
+  await ui.unmount()
+  return seen
+}
+
+test('a script the mod no longer has falls back to greek', { options: { script: 'hebrew' } }, async ($, on) => {
+  expect(await drawnCommand($, on)).toBe('λσ')
+})
+
+test('a custom alphabet of the wrong length falls back to greek', { options: { script: 'custom', alphabet: 'too short' } }, async ($, on) => {
+  expect(await drawnCommand($, on)).toBe('λσ')
+})
+
+test('a good custom alphabet is used', { options: { script: 'custom', alphabet: 'zyxwvutsrqponmlkjihgfedcba' } }, async ($, on) => {
+  expect(await drawnCommand($, on)).toBe('oh') // l is o, s is h
+})

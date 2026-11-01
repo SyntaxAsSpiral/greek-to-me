@@ -55,8 +55,8 @@ def build(src_path, out_dir):
             uni[codepoint] = name
 
     add(".notdef", [], 32)
-    # the plain Tengwar block, moved out of the way of Nerd Font icons
-    for cp in range(0xE000, 0xE080):
+    # the plain Tengwar block and the Cirth after it (U+E080..), moved out of the way of Nerd Font icons
+    for cp in range(0xE000, 0xE100):
         if cp in cmap:
             add(f"tengwar_{cp:04X}", [(cp, 0)], src["hmtx"][cmap[cp]][0], 0xF5100 + cp - 0xE000)
     # one glyph per letter and vowel: the mark, which has negative x, is drawn at the letter's advance

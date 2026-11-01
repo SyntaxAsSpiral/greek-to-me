@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { greekify, byMap, buildMap, quenya, tengwar, maya, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
+import { greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -20,13 +20,6 @@ test('quenya: the vowel joins the NEXT consonant as one character, a carrier syl
   // ta: tinco, then the carrier+a syllable (carrier is letter 21)
   expect(quenya('ta')).toBe('\u{F5100}\u{F5269}')
   expect(quenya('a_b')).toBe('\u{F5269}_\u{F5105}')
-})
-
-test('maya: stable per character, case-folded, punctuation kept', () => {
-  const o = maya('aA, b')
-  expect([...o][0]).toBe([...o][1])
-  expect(o[0]! >= '\u{F6200}' || [...o][0]!.codePointAt(0)! >= 0xf6200).toBe(true)
-  expect(o.includes(', ')).toBe(true)
 })
 
 test('aurebesh: alphanumerics go to U+EA00+ascii, rest kept', () => {
@@ -68,36 +61,6 @@ test('tengwar: the vowel joins the consonant BEFORE it as one character, a carri
   expect([...tengwar('tale')].length).toBe(2) // two syllables, two cells
 })
 
-test('hebrew and katakana: every letter maps, case folds, and katakana stays one cell wide', () => {
-  const h = byMap(buildMap('hebrew')!)
-  const k = byMap(buildMap('katakana')!)
-  expect(h('abc ABC 1')).toBe('אבכ אבכ 1')
-  expect(k('abc ABC 1')).toBe('ｱﾊｾ ｱﾊｾ 1')
-  for (const c of 'abcdefghijklmnopqrstuvwxyz') expect(k(c)).toMatch(/^[\uFF71-\uFF9D]$/) // half-width katakana only
-  expect(new Set([...'abcdefghijklmnopqrstuvwxyz'].map(k)).size).toBe(26)
-})
-
-test('malayalam and arabic: 26 distinct signs each, case folds, other characters kept', () => {
-  for (const name of ['malayalam', 'arabic']) {
-    const f = byMap(buildMap(name)!)
-    expect(new Set([...'abcdefghijklmnopqrstuvwxyz'].map(f)).size).toBe(26)
-    expect(f('a_B 1')).toBe(f('a') + '_' + f('b') + ' 1')
-  }
-  expect(byMap(buildMap('arabic')!)('ab')).toBe('اب')
-  expect(byMap(buildMap('malayalam')!)('ab')).toBe('അബ')
-})
-
-test('maya: only full-width signs, never a zero-width mark, and stable per character', () => {
-  const o = maya('abcdefghijklmnopqrstuvwxyz0123456789')
-  expect([...o].length).toBe(36)
-  expect(new Set([...o]).size).toBeGreaterThan(30) // a hash may collide now and then, never wholesale
-  for (const c of o) {
-    const cp = c.codePointAt(0)!
-    expect(cp >= 0xf6200 && cp <= 0xf6847).toBe(true)
-  }
-  expect(maya('aa')).toBe(maya('a') + maya('a'))
-})
-
 test('group preview: every line is previewed, with the first marked as a command', () => {
   const tf = byMap(new Map([['l', 'λ'], ['s', 'σ']]))
   expect(groupPreview({ tool: 'Bash', input: { command: 'ls\nls\nls' } }, tf)).toEqual(['$ λσ', '  λσ', '  λσ'])
@@ -134,4 +97,22 @@ test('grimdark: 26 distinct one-cell signs, none an emoji, case folds', () => {
     expect(/\p{Emoji_Presentation}/u.test(s)).toBe(false) // an emoji would be two cells wide
   }
   expect(f('aE_1')).toBe('☠⚙_1')
+})
+
+test('cirth: a letter for a letter in the registry\'s letters, moved to U+F5180 and up, others kept', () => {
+  expect(cirth('pa b!')).toBe('\u{F5180}\u{F51B1} \u{F5181}!')
+  expect(cirth('K')).toBe(cirth('c')) // c and k are the same rune, case folds
+  for (const c of cirth('abcdefghijklmnopqrstuvwxyz')) expect(c.codePointAt(0)! >= 0xf5180 && c.codePointAt(0)! <= 0xf51ff).toBe(true)
+})
+
+test('customMap: 26 characters map a to z, 52 give the capitals their own, spaces are ignored, anything else is null', () => {
+  const lower = 'ᚨᛒᚲᛞᛖᚠᚷᚺᛁᛃᚲᛚᛗᚾᛟᛈᚲᚱᛊᛏᚢᚢᚹᛉᛃᛉ' // runic, as the README gives it
+  const m = byMap(customMap(lower)!)
+  expect(m('ab Ab 1')).toBe('ᚨᛒ ᚨᛒ 1')
+  const both = byMap(customMap(lower + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')!)
+  expect(both('aA')).toBe('ᚨA')
+  expect(byMap(customMap('z y x w v u t s r q p o n m l k j i h g f e d c b a')!)('abc')).toBe('zyx')
+  expect(customMap('abc')).toBeNull()
+  expect(customMap('')).toBeNull()
+  expect(customMap(lower + 'x')).toBeNull()
 })

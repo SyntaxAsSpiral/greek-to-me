@@ -1,30 +1,30 @@
 {
   "name": "greek-to-me",
-  "version": "0.3.0",
-  "description": "It's all Greek to me: code fences in replies are drawn in Greek (or runes, braille, pIqaD, Quenya, hieroglyphs, Maya...) instead of Latin.",
+  "version": "0.4.0",
+  "description": "It's all Greek to me: tool-call traces drawn in Greek, Tolkien's Quenya, Tengwar or Cirth, Klingon, Aurebesh or a grimdark script of the mod's own, or in an alphabet you supply, instead of Latin.",
   "userConfig": {
     "script": {
       "type": "string",
       "title": "Script",
-      "description": "What code blocks are drawn in. klingon, quenya and tengwar use private-use codepoints, maya uses Maya.otf's, hiero needs an Egyptian Hieroglyphs font; each needs a font that has them. aurebesh needs assets/AurebeshPUA.otf installed.",
+      "description": "What the code is drawn in. greek is the default. quenya, tengwar, cirth and klingon use private-use codepoints and aurebesh a plane-15 copy of the font, which ship in fonts/ and need installing; grimdark needs a font with alchemical symbols. custom uses the alphabet below, in any font you have. A script the mod no longer has falls back to greek.",
       "default": "greek",
       "options": [
         "greek",
-        "runic",
-        "braille",
-        "klingon",
         "quenya",
         "tengwar",
-        "hebrew",
-        "katakana",
-        "malayalam",
-        "arabic",
-        "grimdark",
-        "hiero",
+        "cirth",
+        "klingon",
         "aurebesh",
-        "maya",
+        "grimdark",
+        "custom",
         "off"
       ]
+    },
+    "alphabet": {
+      "type": "string",
+      "title": "Custom alphabet",
+      "description": "For script = custom: your own letters, a to z in order, 26 characters (or 52: the capitals after the lower case). Spaces are ignored. One cell wide each; wide or joining scripts will not line up. Anything else falls back to greek. The README has alphabets to paste in.",
+      "default": ""
     },
     "keep": {
       "type": "string",
