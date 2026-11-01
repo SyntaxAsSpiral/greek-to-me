@@ -116,6 +116,24 @@ const quenya: Transform = line => {
 const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
+// Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
+const INPUT_KEYS = new Set(['command', 'content', 'old_string', 'new_string', 'new_source', 'code', 'script'])
+const OUTPUT_KEYS = new Set(['stdout', 'stderr', 'content', 'oldString', 'newString', 'old_string', 'new_string', 'lines', 'new_source'])
+
+// ANSI colour codes in a result must survive: transform the text between them only.
+const ANSI = /(\x1b\[[0-9;?]*[ -/]*[@-~])/
+export const ansiSafe = (tf: Transform): Transform => text => text.split(ANSI).map((part, i) => (i % 2 === 1 ? part : tf(part))).join('')
+
+// A copy of value with the strings under the named keys transformed. Anything else, and the shape, is kept.
+export const mapDeep = (value: unknown, keys: Set<string>, tf: Transform, hit = false): unknown => {
+  if (typeof value === 'string') return hit ? tf(value) : value
+  if (Array.isArray(value)) return value.map(v => mapDeep(v, keys, tf, hit))
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, mapDeep(v, keys, tf, hit || keys.has(k))]))
+  }
+  return value
+}
+
 export { byMap, quenya, maya, aurebesh }
 export const greekify = (text: string, tf: Transform, keep: Set<string>): string => {
   const out: string[] = []
@@ -153,6 +171,22 @@ export const register: Register = (on, options) => {
   const special: Record<string, Transform> = { quenya, maya, aurebesh }
   const map = special[script] || script === 'off' ? null : buildMap(script)
   const tf: Transform | null = special[script] ?? (map ? byMap(map) : null)
+
+  const traces = options.traces !== false && tf !== null
+  const safe = tf ? ansiSafe(tf) : null
+
+  on('ui.render', { component: 'ToolUse' }, ($, e, next) => {
+    if (!traces || !safe) return next(e)
+    const p = e.props
+    const props = { ...p, input: mapDeep(p.input, INPUT_KEYS, safe) }
+    if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, safe)
+    return next({ ...e, props })
+  })
+
+  on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
+    if (!traces || !safe) return next(e)
+    return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
+  })
 
   on('ui.render', { component: 'AssistantMessage' }, ($, e, next) => {
     if (!tf) return next(e)

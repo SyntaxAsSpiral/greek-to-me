@@ -1,6 +1,6 @@
 # greek-to-me
 
-It's all Greek to me. A mod for Claude Code that draws the code blocks in a reply in another script instead of Latin: Greek by default, or runic, braille, Klingon pIqaD, Quenya (Tengwar), Egyptian hieroglyphs, Maya glyphs or Aurebesh. Fences tagged `markdown`, `md` or `json` stay readable. Only the drawing changes; the stored message is untouched, so ctrl+o shows the real code.
+It's all Greek to me. A mod for Claude Code that draws the code blocks in a reply in another script instead of Latin: Greek by default, or runic, braille, Klingon pIqaD, Quenya (Tengwar), Egyptian hieroglyphs, Maya glyphs or Aurebesh. Fences tagged `markdown`, `md` or `json` stay readable. The code in tool calls and their results is drawn the same way: commands, file content, edit strings and output, with tool names and file paths left readable and ANSI colours kept. Only the drawing changes; the stored message is untouched, so ctrl+o shows the real code.
 
 ## Install
 
@@ -8,7 +8,7 @@ It's all Greek to me. A mod for Claude Code that draws the code blocks in a repl
 /plugin install greek-to-me --marketplace SyntaxAsSpiral/greek-to-me
 ```
 
-Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fence languages left alone. The change applies to the next reply drawn.
+Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fence languages left alone. `traces` (on by default) turns the tool-call rewriting off. The change applies to the next reply drawn.
 
 ## Scripts and fonts
 

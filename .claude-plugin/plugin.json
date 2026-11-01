@@ -1,6 +1,6 @@
 {
   "name": "greek-to-me",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "It's all Greek to me: code fences in replies are drawn in Greek (or runes, braille, pIqaD, Quenya, hieroglyphs, Maya...) instead of Latin.",
   "userConfig": {
     "script": {
@@ -25,6 +25,12 @@
       "title": "Keep readable",
       "description": "Comma-separated fence languages left alone.",
       "default": "markdown,md,json"
+    },
+    "traces": {
+      "type": "boolean",
+      "title": "Tool traces",
+      "description": "Also draw the code in tool calls and their results (commands, file content, edits, output) in the chosen script. Names and paths stay readable.",
+      "default": true
     }
   },
   "license": "MIT"
