@@ -107,7 +107,7 @@ test('a group whose latest call has no input yet draws a quiet ellipsis, not the
   await ui.unmount()
 })
 
-test('a running group whose command is longer than the preview ends in a (+N lines) count, in the script', { options: { script: 'greek' } }, async ($, on) => {
+test('a running group whose command is longer than the preview ends in a (+N lines) count, in Latin', { options: { script: 'greek' } }, async ($, on) => {
   on('clock.now', async () => ({ value: 0 }))
   on('clock.every', async () => ({ value: undefined }))
   on('ui.render', ($: any, e: any) => {
@@ -123,9 +123,8 @@ test('a running group whose command is longer than the preview ends in a (+N lin
     },
   })
   const shown = (await ui.findAll({ type: 'Text' })).map(t => t.text)
-  // 7 rows kept: the marker takes the last, so 6 lines show and 6 are counted; the greek of "lines" is not Latin
-  expect(shown.at(-1)).toContain('(+6 ')
-  expect(shown.at(-1)).not.toContain('lines')
+  // 7 rows kept: the marker takes the last, so 6 lines show and 6 are counted; the count is Latin, not in the script
+  expect(shown.at(-1)?.trim()).toBe('(+6 lines)')
   await ui.unmount()
 })
 

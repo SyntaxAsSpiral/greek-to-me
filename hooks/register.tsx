@@ -373,7 +373,7 @@ export const register: Register = (on, options) => {
     const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
     const peek = groupPreview(last, safe)
     if (peek.length) lastPeek = peek
-    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS, n => safe(`(+${n} ${n === 1 ? 'line' : 'lines'})`))
+    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS) // the (+N lines) count stays Latin, like the engine's
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
     return (
       <Box flexDirection="column" paddingTop={1}>
