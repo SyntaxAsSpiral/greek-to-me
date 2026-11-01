@@ -74,3 +74,13 @@ test('hebrew and katakana: every letter maps, case folds, and katakana stays one
   for (const c of 'abcdefghijklmnopqrstuvwxyz') expect(k(c)).toMatch(/^[\uFF71-\uFF9D]$/) // half-width katakana only
   expect(new Set([...'abcdefghijklmnopqrstuvwxyz'].map(k)).size).toBe(26)
 })
+
+test('malayalam and arabic: 26 distinct signs each, case folds, other characters kept', () => {
+  for (const name of ['malayalam', 'arabic']) {
+    const f = byMap(buildMap(name)!)
+    expect(new Set([...'abcdefghijklmnopqrstuvwxyz'].map(f)).size).toBe(26)
+    expect(f('a_B 1')).toBe(f('a') + '_' + f('b') + ' 1')
+  }
+  expect(byMap(buildMap('arabic')!)('ab')).toBe('اب')
+  expect(byMap(buildMap('malayalam')!)('ab')).toBe('അബ')
+})

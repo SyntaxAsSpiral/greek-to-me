@@ -18,6 +18,8 @@ Then open `/config` and set the `script` row of greek-to-me. `keep` lists the fe
 | `runic` | Elder Futhark | any with Runic (U+16A0) |
 | `braille` | Braille | any with Braille |
 | `hebrew` | one Hebrew letter per Latin one (some share a sign); the terminal does not reorder it, so it runs left to right | any with Hebrew |
+| `malayalam` | Malayalam letters and vowels, one per Latin letter, no conjuncts so each stays one cell | any with Malayalam, such as FreeSans |
+| `arabic` | Arabic letters, one per Latin letter, in their separate forms; a terminal neither joins them nor runs them right to left | any with Arabic, such as DejaVu Sans |
 | `katakana` | half-width katakana, one cell wide so code keeps its columns | any with CJK, such as Noto Sans CJK |
 | `klingon` | pIqaD, CSUR U+F8D0 | Unifont CSUR |
 | `quenya` | Tengwar written as Quenya is: consonants as letters, each vowel a tehta on the *next* consonant (or a carrier) | `TengwarPUA.otf`, built below |

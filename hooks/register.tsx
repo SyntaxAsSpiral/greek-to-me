@@ -14,6 +14,10 @@ const alphabets: Record<string, { lower: string; upper?: string; digits?: string
   hebrew: { lower: 'אבכדעפגהישקלמנופקרסתטווצחז' },
   // half-width katakana: one cell wide, so code keeps its columns (full-width kana would take two)
   katakana: { lower: 'ｱﾊｾﾄｴﾌｹﾍｲｼｶﾘﾏﾅｵﾎｸﾗｻﾀｳﾋﾜｽﾔｿ' },
+  // Malayalam base letters and vowels only, one sign for each Latin letter and no conjuncts, so each stays one cell
+  malayalam: { lower: 'അബചദഎഫഗഹഇജകലമനഒപഖരസതഉവഴഷയശ' },
+  // Arabic letters in their separate forms: a terminal neither joins them nor runs them right to left
+  arabic: { lower: 'ابثدعفغهيجكلمنوضقرستظزصحطذ' },
   // Egyptian uniliteral signs (Noto Sans Egyptian Hieroglyphs)
   hiero: { lower: '𓄿𓃀𓎡𓂧𓇋𓆑𓎼𓉔𓇋𓆓𓎡𓃭𓅓𓈖𓂝𓊪𓈎𓂋𓋴𓏏𓅱𓆑𓅱𓐍𓇌𓊃' },
   // pIqaD, ConScript Unicode Registry U+F8D0..
