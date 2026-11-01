@@ -131,7 +131,7 @@ test('a good custom alphabet is used', { options: { script: 'custom', alphabet: 
   expect(await drawnCommand($, on)).toBe('oh') // l is o, s is h
 })
 
-test('a shell group carries its own clock while it runs and when it is done', { options: { script: 'greek' } }, async ($, on) => {
+test('a shell group carries its own clock, and the background note only after five seconds', { options: { script: 'greek' } }, async ($, on) => {
   let now = 1000
   on('clock.now', async () => ({ value: now }))
   on('clock.every', async () => ({ value: undefined }))
@@ -139,15 +139,19 @@ test('a shell group carries its own clock while it runs and when it is done', { 
     isActive, isExpanded: false, isCallsOnly: true,
     calls: [{ tool: 'Bash', input: { command: 'ls' }, isRunning: isActive, isErrored: false, isInterrupted: false }],
   })
-  const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(true) })
-  const running = JSON.stringify(await ui.find({ type: 'Text' }))
-  expect(running).toContain('0s')
-  expect(running).not.toContain('run in background') // the summary carries no key note
-  await ui.unmount()
-  now = 6500
-  const ui2 = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(false) })
-  const done = JSON.stringify(await ui2.find({ type: 'Text' }))
-  expect(done).toContain('(5s)')
-  expect(done).not.toContain('run in background')
-  await ui2.unmount()
+  // the summary row's text, and whether a row says how to run the call in the background
+  const draw = async (active: boolean) => {
+    const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk', props: props(active) })
+    const summary = (await ui.find({ type: 'Text' }))?.text
+    const hint = (await ui.find({ type: 'Text', text: /to run in background/ })) !== undefined
+    await ui.unmount()
+    return { summary, hint }
+  }
+  expect(await draw(true)).toEqual({ summary: 'Running 1 shell command… (0s)', hint: false })
+  now = 3000
+  expect((await draw(true)).hint).toBe(false) // two seconds: too soon
+  now = 7000
+  expect(await draw(true)).toEqual({ summary: 'Running 1 shell command… (6s)', hint: true }) // the default key, after six
+  now = 9500
+  expect(await draw(false)).toEqual({ summary: 'Ran 1 shell command (8s)', hint: false })
 })

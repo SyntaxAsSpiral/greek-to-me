@@ -304,6 +304,17 @@ export const backgroundKey = (keybindingsJson: string | undefined): string | nul
   return added[0] ?? keys[0] ?? null
 }
 
+// How the engine writes a key: alt for meta and option, ctrl for control (a binding of 'meta+b' reads 'alt+b')
+export const keyLabel = (key: string): string =>
+  key
+    .toLowerCase()
+    .split(' ')
+    .map(stroke => stroke.split('+').map(k => (k === 'meta' || k === 'opt' || k === 'option' ? 'alt' : k === 'control' ? 'ctrl' : k)).join('+'))
+    .join(' ')
+
+// The engine shows the background note only after a call has run a few seconds, at the end of the peek
+const BACKGROUND_HINT_AFTER_SECONDS = 5
+
 // 14s, then 1:05, like the spinner's readout
 export const clockText = (seconds: number): string => {
   const s = Math.max(0, Math.floor(seconds))
@@ -403,17 +414,20 @@ export const register: Register = (on, options) => {
     const peek = groupPreview(last, safe)
     if (peek.length) lastPeek = peek
     const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS)
+    const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
+    if (bgKey && secs !== null && secs >= BACKGROUND_HINT_AFTER_SECONDS) rows.push(`     ${keyLabel(bgKey)} to run in background`)
     return (
       <Box flexDirection="column">
         <Text>{summary}</Text>
-        {lines.map((line, n) => (
+        {rows.map((row, n) => (
           <Text key={String(n)} dimColor wrap="truncate-end">
-            {(n === 0 ? '  ⎿  ' : '     ') + line}
+            {row}
           </Text>
         ))}
       </Box>
     )
   })
+
 
 
   // code in a reply is left alone unless the replies setting is on; the tool traces are the point

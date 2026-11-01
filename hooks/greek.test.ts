@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { backgroundKey, clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
+import { backgroundKey, clockText, keyLabel, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -138,4 +138,12 @@ test('clockText: seconds, then minutes and seconds', () => {
   expect(clockText(14.9)).toBe('14s')
   expect(clockText(65)).toBe('1:05')
   expect(clockText(-3)).toBe('0s')
+})
+
+test('keyLabel writes a key as the engine does: alt for meta, ctrl for control, chords kept', () => {
+  expect(keyLabel('meta+b')).toBe('alt+b')
+  expect(keyLabel('Option+B')).toBe('alt+b')
+  expect(keyLabel('control+g')).toBe('ctrl+g')
+  expect(keyLabel('ctrl+x meta+b')).toBe('ctrl+x alt+b')
+  expect(keyLabel('ctrl+b')).toBe('ctrl+b')
 })
