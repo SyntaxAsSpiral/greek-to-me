@@ -181,8 +181,8 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 
 // Rewrite fenced blocks only; an unclosed fence (streaming) runs to the end.
 // Tool traces: only the fields that carry code are rewritten; names and paths stay readable.
-// The tools the mod draws in script: their folded groups, and their collapsed rows. Every other tool, and a group
-// holding any other tool, is left to the engine, in Latin and with its own truncation: what a Write or an Edit puts
+// The tools the mod draws in script: their collapsed rows, and the folded groups that hold them (see drawsGroup).
+// Every other tool is left to the engine, in Latin and with its own truncation: what a Write or an Edit puts
 // in a file, for one, is worth reading as it is. Add a tool here only if its calls are shell commands, or carry code
 // groupPreview can show; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from it.
 export const SCRIPT_GROUP_TOOLS = new Set(['Bash'])
@@ -208,6 +208,10 @@ export const mapDeep = (value: unknown, keys: Set<string>, tf: Transform, hit = 
 // and, while it runs, the latest call as a '⎿' line with its code in the script.
 type GroupCall = { tool: string; input?: unknown }
 const KINDS: Record<string, string> = { Read: 'read', Grep: 'search', Glob: 'search', LS: 'list', Bash: 'shell' }
+// The mod draws a group with a shell command in it, mixed with reads and searches or not, as long as the summary
+// can count every call the way the engine does. A group holding any other tool stays the engine's.
+export const drawsGroup = (calls: readonly GroupCall[]): boolean =>
+  calls.some(c => SCRIPT_GROUP_TOOLS.has(c.tool)) && calls.every(c => Object.hasOwn(KINDS, c.tool))
 const PHRASES: Record<string, [string, string, string, string]> = {
   read: ['reading', 'read', 'file', 'files'],
   search: ['searching for', 'searched for', 'pattern', 'patterns'],
@@ -338,7 +342,7 @@ export const register: Register = (on, options) => {
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {
     const p = e.props
     if (!traces || !safe || p.isExpanded || p.isCallsOnly === false) return next(e)
-    if (!p.calls.every(c => SCRIPT_GROUP_TOOLS.has(c.tool))) return next(e)
+    if (!drawsGroup(p.calls)) return next(e)
     await read($, tickAtom) // the one-second tick redraws a running group
     const { Box, Text } = $.ui.resolve(e)
     const last = p.calls[p.calls.length - 1]
