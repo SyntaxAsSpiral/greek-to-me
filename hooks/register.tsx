@@ -269,6 +269,32 @@ export const groupPreview = (call: GroupCall, tf: Transform): string[] => {
   return []
 }
 
+// A finished group lists its calls in the order they ran: each command on a row of its own, in the script and cut to
+// its first line; a run of reads and searches between commands shares one row, their paths and patterns as they are,
+// joined by commas. A call with nothing to show is left out. Past max rows, the last row counts the rest, in Latin
+// like the peek's own count.
+export const callList = (calls: readonly GroupCall[], tf: Transform, max: number): string[] => {
+  const lines: string[] = []
+  let run: string[] = []
+  const flush = () => {
+    if (run.length) lines.push(run.join(', '))
+    run = []
+  }
+  for (const c of calls) {
+    const peek = groupPreview(c, tf)
+    if (!SCRIPT_GROUP_TOOLS.has(c.tool)) {
+      if (peek.length) run.push(peek[0]!)
+      continue
+    }
+    flush()
+    if (peek.length) lines.push(peek.length > 1 ? peek[0] + ' …' : peek[0]!)
+  }
+  flush()
+  if (lines.length <= max) return lines
+  const hidden = lines.length - (max - 1)
+  return [...lines.slice(0, max - 1), `(+${hidden} more)`]
+}
+
 export { byMap, quenya, tengwar, cirth, aurebesh }
 export const greekify = (text: string, tf: Transform, keep: Set<string>): string => {
   const out: string[] = []
@@ -366,18 +392,16 @@ export const register: Register = (on, options) => {
     }
     const secs = clock ? ((clock.end ?? now) - clock.start) / 1000 : null
     const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
+    const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
+    let lines: string[]
     if (!p.isActive || !last) {
       lastPeek = []
-      return (
-        <Box paddingTop={1}>
-          <Text>{summary}</Text>
-        </Box>
-      )
+      lines = callList(p.calls, safe, PREVIEW_ROWS) // one row per call; a row too long is cut at the edge
+    } else {
+      const peek = groupPreview(last, safe)
+      if (peek.length) lastPeek = peek
+      lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS) // the (+N lines) count stays Latin, like the engine's
     }
-    const room = Math.max(20, (e.viewport?.columns ?? 100) - 8) // what the '  ⎿  ' mark and the margin leave
-    const peek = groupPreview(last, safe)
-    if (peek.length) lastPeek = peek
-    const lines = wrapRows(stickyPeek(peek, lastPeek), room, PREVIEW_ROWS) // the (+N lines) count stays Latin, like the engine's
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
     return (
       <Box flexDirection="column" paddingTop={1}>
