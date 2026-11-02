@@ -187,7 +187,7 @@ const OPEN = /^(\s*)(`{3,}|~{3,})\s*([^\s`]*)/
 // groupPreview can show; a tool whose preview is a path or a pattern (Read, Grep, Glob) gains nothing from it.
 export const SCRIPT_GROUP_TOOLS = new Set(['Bash'])
 const INPUT_KEYS = new Set(['command'])
-const OUTPUT_KEYS = new Set(['stdout', 'stderr'])
+const OUTPUT_KEYS = new Set(['stdout']) // a command's error output stays readable: it is what you most need to read at a glance
 
 // ANSI colour codes in a result must survive: transform the text between them only.
 const ANSI = /(\x1b\[[0-9;?]*[ -/]*[@-~])/

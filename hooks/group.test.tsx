@@ -213,3 +213,19 @@ test('a shell group carries its own clock while it runs and when it is done', { 
   now = 9500
   expect(await summary(false)).toBe('  Ran 1 shell command (8s)')
 })
+
+test("a command's output is in the script, its error output stays readable", { options: { script: 'greek' } }, async ($, on) => {
+  let seen: any
+  on('ui.render', ($: any, e: any) => {
+    seen = e.props.output
+    const { Text } = $.ui.resolve(e)
+    return <Text>engine</Text>
+  })
+  const ui = await $.ui.mount({
+    plugin: 'greek-to-me', surface: 'terminal', component: 'ToolResult', requestId: 'err',
+    props: { tool_use_id: 'err', tool: 'Bash', output: { stdout: 'ls ok', stderr: 'ls: cannot access x\nShell cwd was reset to /tmp' }, isErrored: false, isExpanded: false },
+  })
+  await ui.unmount()
+  expect(seen.stdout).toBe('λσ οκ')
+  expect(seen.stderr).toBe('ls: cannot access x\nShell cwd was reset to /tmp')
+})
