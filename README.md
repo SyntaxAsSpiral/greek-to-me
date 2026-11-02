@@ -1,6 +1,6 @@
 # greek-to-me
 
-![A shell command and its output drawn in Aurebesh, the rest of the session in Latin](docs/aurebesh.png)
+![Three shell snippets drawn in other scripts](docs/triptych.png)
 
 It's all Greek to me. A Claude Code mod that draws shell commands and their output in another script instead of Latin. Only shell commands: every other tool, every permission prompt, and a command's error output stay in Latin, and ctrl+o shows the real text.
 
