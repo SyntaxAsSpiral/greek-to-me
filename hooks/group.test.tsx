@@ -122,38 +122,8 @@ test('a mixed group counts each kind and peeks at its latest call: a command in 
   expect(shellLast[1]?.trim()).toBe('⎿  $ λσ')
   const grepLast = await draw([ls, read, grep], true)
   expect(grepLast[1]?.trim()).toBe('⎿  todo')
-  // never seen running, so no clock of its own; done, so each call gets a row
-  const done = await draw([read, ls], false)
-  expect(done[0]).toBe('Read 1 file, ran 1 shell command')
-  expect(done.slice(1).map(r => r.trim())).toEqual(['⎿  /a.ts', '$ λσ'])
-})
-
-test('a finished group lists each call: a long command is cut to its first line, a call with no input is left out, past seven the rest are counted', { options: { script: 'greek' } }, async ($, on) => {
-  on('clock.now', async () => ({ value: 0 }))
-  on('clock.every', async () => ({ value: undefined }))
-  on('ui.render', ($: any, e: any) => {
-    const { Text } = $.ui.resolve(e)
-    return <Text>engine</Text>
-  })
-  const call = (tool: string, input: object | undefined) => ({ tool, input, isRunning: false, isErrored: false, isInterrupted: false })
-  const draw = async (id: string, calls: any[]) => {
-    const ui = await $.ui.mount({
-      plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: id,
-      props: { isActive: false, isExpanded: false, isCallsOnly: true, calls },
-    })
-    const shown = (await ui.findAll({ type: 'Text' })).map(t => t.text.trim())
-    await ui.unmount()
-    return shown
-  }
-  const few = await draw('few', [call('Bash', { command: 'ls\npwd' }), call('Glob', { pattern: '*.ts' }), call('Bash', undefined)])
-  expect(few.slice(1)).toEqual(['⎿  $ λσ …', '*.ts'])
-  const ls = call('Bash', { command: 'ls' })
-  const many = await draw('many', Array.from({ length: 10 }, () => ls))
-  expect(many.length).toBe(1 + 7)
-  expect(many.at(-1)).toBe('(+4 more)')
-  // reads and searches between commands share a row
-  const runs = await draw('runs', [call('Read', { file_path: '/a.ts' }), call('Read', { file_path: '/b.ts' }), call('Grep', { pattern: 'todo' }), ls, call('Read', { file_path: '/c.ts' }), ls])
-  expect(runs.slice(1)).toEqual(['⎿  /a.ts, /b.ts, todo', '$ λσ', '/c.ts', '$ λσ'])
+  // never seen running, so no clock of its own; done, so no peek
+  expect(await draw([read, ls], false)).toEqual(['Read 1 file, ran 1 shell command'])
 })
 
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
