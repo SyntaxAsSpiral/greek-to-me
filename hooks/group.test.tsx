@@ -112,18 +112,18 @@ test('a running group shows its counts, then after two seconds the latest comman
     return shown
   }
   const calls = [bash('List the files', false), bash('Read screen for the summary', true)]
-  expect((await draw('ph', calls, true))[0]).toBe('Running 2 shell commands… (0s)')
+  expect((await draw('ph', calls, true))[0]).toBe('● Running 2 shell commands… (0s)') // the engine's gutter: a dot while it runs
   now = 2500
   const later = await draw('ph', calls, true)
-  expect(later[0]).toBe('Reading screen for the summary')
+  expect(later[0]).toBe('● Reading screen for the summary') // 2.5 s: an even second, the dot is on
   expect(later[1]?.trim()).toBe('⎿  $ λσ') // the peek stays, in the script
   now = 4000
-  expect((await draw('ph', calls, false))[0]).toBe('Ran 2 shell commands (4s)')
+  expect((await draw('ph', calls, false))[0]).toBe('  Ran 2 shell commands (4s)') // done: two spaces
   // no description: the counts stay
   now = 0
   await draw('nd', [bash(undefined, true)], true)
   now = 3000
-  expect((await draw('nd', [bash(undefined, true)], true))[0]).toBe('Running 1 shell command… (3s)')
+  expect((await draw('nd', [bash(undefined, true)], true))[0]).toBe('  Running 1 shell command… (3s)') // 3 s: an odd second, the dot blinks off
 })
 
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {
@@ -207,9 +207,9 @@ test('a shell group carries its own clock while it runs and when it is done', { 
     await ui.unmount()
     return text
   }
-  expect(await summary(true)).toBe('Running 1 shell command… (0s)')
+  expect(await summary(true)).toBe('  Running 1 shell command… (0s)') // 1 s on the clock: odd, the dot blinks off
   now = 7000
-  expect(await summary(true)).toBe('Running 1 shell command… (6s)')
+  expect(await summary(true)).toBe('  Running 1 shell command… (6s)') // 7 s on the clock: odd, off
   now = 9500
-  expect(await summary(false)).toBe('Ran 1 shell command (8s)')
+  expect(await summary(false)).toBe('  Ran 1 shell command (8s)')
 })

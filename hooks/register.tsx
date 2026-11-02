@@ -387,11 +387,13 @@ export const register: Register = (on, options) => {
     const secs = clock ? ((clock.end ?? now) - clock.start) / 1000 : null
     const phrase = p.isActive && secs !== null && secs >= PHRASE_AFTER_S && last ? livePhrase((last.input as { description?: unknown } | undefined)?.description) : null
     const summary = phrase ?? groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
+    // the engine's gutter: a dot that blinks while the group runs, two spaces once it is done
+    const gutter = p.isActive && Math.floor(now / 1000) % 2 === 0 ? '● ' : '  '
     if (!p.isActive || !last) {
       lastPeek = []
       return (
         <Box paddingTop={1}>
-          <Text>{summary}</Text>
+          <Text>{gutter + summary}</Text>
         </Box>
       )
     }
@@ -402,7 +404,7 @@ export const register: Register = (on, options) => {
     const rows = lines.map((line, n) => (n === 0 ? '  ⎿  ' : '     ') + line)
     return (
       <Box flexDirection="column" paddingTop={1}>
-        <Text>{summary}</Text>
+        <Text>{gutter + summary}</Text>
         {rows.map((row, n) => (
           <Text key={String(n)} dimColor wrap="truncate-end">
             {row}
