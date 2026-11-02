@@ -193,6 +193,11 @@ const OUTPUT_KEYS = new Set(['stdout', 'stderr'])
 const ANSI = /(\x1b\[[0-9;?]*[ -/]*[@-~])/
 export const ansiSafe = (tf: Transform): Transform => text => text.split(ANSI).map((part, i) => (i % 2 === 1 ? part : tf(part))).join('')
 
+// Lines the engine adds to a command's output are its own, not the command's, and stay as the engine wrote them.
+const ENGINE_NOTES = [/^Shell cwd was reset to /]
+export const keepNotes = (tf: Transform): Transform => text =>
+  text.split('\n').map(line => (ENGINE_NOTES.some(r => r.test(line)) ? line : tf(line))).join('\n')
+
 // A copy of value with the strings under the named keys transformed. Anything else, and the shape, is kept.
 export const mapDeep = (value: unknown, keys: Set<string>, tf: Transform, hit = false): unknown => {
   if (typeof value === 'string') return hit ? tf(value) : value
@@ -350,13 +355,13 @@ export const register: Register = (on, options) => {
     if (!traces || !safe || e.props.isExpanded || !SCRIPT_GROUP_TOOLS.has(e.props.tool)) return next(e)
     const p = e.props
     const props = { ...p, input: mapDeep(p.input, INPUT_KEYS, safe) }
-    if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, safe)
+    if (p.output !== undefined) props.output = mapDeep(p.output, OUTPUT_KEYS, keepNotes(safe))
     return next({ ...e, props })
   })
 
   on('ui.render', { component: 'ToolResult' }, ($, e, next) => {
     if (!traces || !safe || e.props.isExpanded || !SCRIPT_GROUP_TOOLS.has(e.props.tool)) return next(e)
-    return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, safe) } })
+    return next({ ...e, props: { ...e.props, output: mapDeep(e.props.output, OUTPUT_KEYS, keepNotes(safe)) } })
   })
 
   on('ui.render', { component: 'ToolGroup' }, async ($, e, next) => {

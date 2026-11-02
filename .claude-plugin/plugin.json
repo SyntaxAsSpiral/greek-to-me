@@ -1,6 +1,6 @@
 {
   "name": "greek-to-me",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "It's all Greek to me: the shell commands in Claude Code's tool-call peeks are drawn in Greek, Tolkien's Quenya, Tengwar or Cirth, Klingon, Aurebesh or a grimdark script of the mod's own, or an alphabet you supply, instead of Latin.",
   "userConfig": {
     "script": {

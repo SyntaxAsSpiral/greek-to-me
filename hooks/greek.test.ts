@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek, ingForm, livePhrase } from './register'
+import { clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek, ingForm, livePhrase, keepNotes } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -149,4 +149,10 @@ test('ingForm: the first word of a description turns to -ing as English spells i
   expect(livePhrase(undefined)).toBe(null)
   expect(livePhrase('git status in the repo')).toBe('gitting status in the repo') // zk: it works
   expect(livePhrase('Check CI')).toBe('Checking CI')
+})
+
+test("keepNotes: the engine's own lines in a command's output stay as written, the command's go to the script", () => {
+  const tf = byMap(buildMap('greek')!)
+  const stderr = 'oops\nShell cwd was reset to /mnt/echo/x'
+  expect(keepNotes(tf)(stderr)).toBe(tf('oops') + '\nShell cwd was reset to /mnt/echo/x')
 })
