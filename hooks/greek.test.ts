@@ -1,5 +1,5 @@
 import { test, expect } from 'claude-code/testing'
-import { clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek } from './register'
+import { clockText, greekify, byMap, buildMap, quenya, tengwar, cirth, customMap, aurebesh, mapDeep, ansiSafe, groupSummary, groupPreview, wrapRows, stickyPeek, ingForm, livePhrase } from './register'
 
 const map = byMap(new Map([['a', 'α'], ['b', 'β']]))
 const keep = new Set(['json'])
@@ -135,4 +135,18 @@ test('clockText: seconds, then minutes and seconds', () => {
   expect(clockText(60)).toBe('1m 0s')
   expect(clockText(65)).toBe('1m 5s')
   expect(clockText(-3)).toBe('0s')
+})
+
+test('ingForm: the first word of a description turns to -ing as English spells it', () => {
+  const cases: [string, string][] = [
+    ['Read', 'Reading'], ['Record', 'Recording'], ['Search', 'Searching'], ['Write', 'Writing'], ['Run', 'Running'],
+    ['Set', 'Setting'], ['Commit', 'Committing'], ['Fix', 'Fixing'], ['Show', 'Showing'], ['Tie', 'Tying'],
+    ['See', 'Seeing'], ['Edit', 'Editing'], ['Open', 'Opening'], ['Check', 'Checking'], ['List', 'Listing'],
+    ['Running', 'Running'], ['./run.sh', './run.sh'],
+  ]
+  for (const [word, ing] of cases) expect(ingForm(word)).toBe(ing)
+  expect(livePhrase('Read  context around\nthe strings')).toBe('Reading context around the strings')
+  expect(livePhrase(undefined)).toBe(null)
+  expect(livePhrase('git status in the repo')).toBe('gitting status in the repo') // zk: it works
+  expect(livePhrase('Check CI')).toBe('Checking CI')
 })

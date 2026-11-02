@@ -67,7 +67,7 @@ test('only a collapsed Bash row is in the script; Write, Edit, NotebookEdit, Mon
   expect(seen.Bash).toBe('λσ -λα')
 })
 
-test('a group with a shell command and only reads, searches or listings is drawn by the mod; one with any other tool, or no shell command, is the engine\'s', { options: { script: 'greek' } }, async ($, on) => {
+test('only a group of shell commands is drawn by the mod; any other call in the group leaves it to the engine', { options: { script: 'greek' } }, async ($, on) => {
   on('clock.now', async () => ({ value: 0 }))
   on('clock.every', async () => ({ value: undefined }))
   const reached: string[] = []
@@ -77,15 +77,14 @@ test('a group with a shell command and only reads, searches or listings is drawn
     return <Text>engine</Text>
   })
   const bash = { tool: 'Bash', input: { command: 'ls' }, isRunning: true, isErrored: false, isInterrupted: false }
-  const edit = { tool: 'Edit', input: { file_path: '/x' }, isRunning: false, isErrored: false, isInterrupted: false }
-  const as = (tool: string) => ({ ...edit, tool })
+  const other = (tool: string) => ({ tool, input: { file_path: '/x' }, isRunning: false, isErrored: false, isInterrupted: false })
   const groups: [string, any[]][] = [
     ['only', [bash, bash]],
-    ['edit', [edit, bash]],
-    ['grep', [as('Grep'), bash]],
-    ['all-kinds', [as('Read'), as('Glob'), as('LS'), bash]],
-    ['mcp', [bash, as('mcp__other__tool')]],
-    ['no-shell', [as('Read'), as('Grep')]],
+    ['edit', [other('Edit'), bash]],
+    ['read', [other('Read'), bash]],
+    ['write', [other('Write'), bash, other('Read')]],
+    ['mcp', [bash, other('mcp__other__tool')]],
+    ['no-shell', [other('Read'), other('Grep')]],
   ]
   for (const [id, calls] of groups) {
     const ui = await $.ui.mount({
@@ -94,36 +93,37 @@ test('a group with a shell command and only reads, searches or listings is drawn
     })
     await ui.unmount()
   }
-  expect(reached).toEqual(['edit', 'mcp', 'no-shell'])
+  expect(reached).toEqual(['edit', 'read', 'write', 'mcp', 'no-shell'])
 })
 
-test('a mixed group counts each kind and peeks at its latest call: a command in the script, a pattern as it is', { options: { script: 'greek' } }, async ($, on) => {
-  on('clock.now', async () => ({ value: 0 }))
+test('a running group shows its counts, then after two seconds the latest command\'s description in -ing form; done, the counts again', { options: { script: 'greek' } }, async ($, on) => {
+  let now = 0
+  on('clock.now', async () => ({ value: now }))
   on('clock.every', async () => ({ value: undefined }))
   on('ui.render', ($: any, e: any) => {
     const { Text } = $.ui.resolve(e)
     return <Text>engine</Text>
   })
-  const call = (tool: string, input: object) => ({ tool, input, isRunning: false, isErrored: false, isInterrupted: false })
-  const draw = async (calls: any[], isActive: boolean) => {
-    const ui = await $.ui.mount({
-      plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'mx' + calls.length + isActive,
-      props: { isActive, isExpanded: false, isCallsOnly: true, calls },
-    })
+  const bash = (description: string | undefined, isRunning: boolean) => ({ tool: 'Bash', input: { command: 'ls', description }, isRunning, isErrored: false, isInterrupted: false })
+  const draw = async (id: string, calls: any[], isActive: boolean) => {
+    const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: id, props: { isActive, isExpanded: false, isCallsOnly: true, calls } })
     const shown = (await ui.findAll({ type: 'Text' })).map(t => t.text)
     await ui.unmount()
     return shown
   }
-  const read = call('Read', { file_path: '/a.ts' })
-  const grep = call('Grep', { pattern: 'todo' })
-  const ls = call('Bash', { command: 'ls' })
-  const shellLast = await draw([read, grep, ls], true)
-  expect(shellLast[0]).toBe('Reading 1 file, searching for 1 pattern, running 1 shell command… (0s)')
-  expect(shellLast[1]?.trim()).toBe('⎿  $ λσ')
-  const grepLast = await draw([ls, read, grep], true)
-  expect(grepLast[1]?.trim()).toBe('⎿  todo')
-  // never seen running, so no clock of its own; done, so no peek
-  expect(await draw([read, ls], false)).toEqual(['Read 1 file, ran 1 shell command'])
+  const calls = [bash('List the files', false), bash('Read screen for the summary', true)]
+  expect((await draw('ph', calls, true))[0]).toBe('Running 2 shell commands… (0s)')
+  now = 2500
+  const later = await draw('ph', calls, true)
+  expect(later[0]).toBe('Reading screen for the summary')
+  expect(later[1]?.trim()).toBe('⎿  $ λσ') // the peek stays, in the script
+  now = 4000
+  expect((await draw('ph', calls, false))[0]).toBe('Ran 2 shell commands (4s)')
+  // no description: the counts stay
+  now = 0
+  await draw('nd', [bash(undefined, true)], true)
+  now = 3000
+  expect((await draw('nd', [bash(undefined, true)], true))[0]).toBe('Running 1 shell command… (3s)')
 })
 
 test('a group whose latest call has no input yet draws a quiet ellipsis, not the tool name', { options: { script: 'greek' } }, async ($, on) => {

@@ -208,10 +208,30 @@ export const mapDeep = (value: unknown, keys: Set<string>, tf: Transform, hit = 
 // and, while it runs, the latest call as a '⎿' line with its code in the script.
 type GroupCall = { tool: string; input?: unknown }
 const KINDS: Record<string, string> = { Read: 'read', Grep: 'search', Glob: 'search', LS: 'list', Bash: 'shell' }
-// The mod draws a group with a shell command in it, mixed with reads and searches or not, as long as the summary
-// can count every call the way the engine does. A group holding any other tool stays the engine's.
+// The mod draws a group of shell commands and nothing else; a group with any other call in it stays the engine's,
+// drawn as the engine draws it.
 export const drawsGroup = (calls: readonly GroupCall[]): boolean =>
-  calls.some(c => SCRIPT_GROUP_TOOLS.has(c.tool)) && calls.every(c => Object.hasOwn(KINDS, c.tool))
+  calls.length > 0 && calls.every(c => SCRIPT_GROUP_TOOLS.has(c.tool))
+
+// Once a group has run a moment, the engine swaps its counts for a phrase of what is under way: so far, always the
+// latest command's description with its first word turned to -ing ("Read the log" becomes "Reading the log").
+export const PHRASE_AFTER_S = 2
+const DOUBLED = new Set(['commit', 'submit', 'admit', 'permit', 'omit', 'emit', 'refer', 'prefer', 'occur', 'begin', 'forget', 'control', 'patrol', 'compel', 'expel', 'regret', 'upset', 'outrun', 'rerun'])
+export const ingForm = (word: string): string => {
+  const w = word.toLowerCase()
+  if (w.length < 2 || w.endsWith('ing') || !/^[a-z]+$/.test(w)) return word
+  let stem = word
+  if (w.endsWith('ie')) stem = word.slice(0, -2) + 'y' // tie, tying
+  else if (w.endsWith('e') && !/(ee|ye|oe)$/.test(w)) stem = word.slice(0, -1) // write, writing
+  else if (DOUBLED.has(w) || /^[^aeiou]*[aeiou][^aeiouwxy]$/.test(w)) stem = word + word.slice(-1) // run, running
+  return stem + 'ing'
+}
+export const livePhrase = (description: unknown): string | null => {
+  if (typeof description !== 'string') return null
+  const text = description.replace(/\s+/g, ' ').trim()
+  const m = /^(\S+)(.*)$/.exec(text)
+  return m ? ingForm(m[1]!) + m[2] : null // a command name takes it too: 'gitting status'
+}
 const PHRASES: Record<string, [string, string, string, string]> = {
   read: ['reading', 'read', 'file', 'files'],
   search: ['searching for', 'searched for', 'pattern', 'patterns'],
@@ -365,7 +385,8 @@ export const register: Register = (on, options) => {
       })
     }
     const secs = clock ? ((clock.end ?? now) - clock.start) / 1000 : null
-    const summary = groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
+    const phrase = p.isActive && secs !== null && secs >= PHRASE_AFTER_S && last ? livePhrase((last.input as { description?: unknown } | undefined)?.description) : null
+    const summary = phrase ?? groupSummary(p.calls, p.isActive) + (secs === null ? '' : ` (${clockText(secs)})`)
     if (!p.isActive || !last) {
       lastPeek = []
       return (
