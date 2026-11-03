@@ -115,7 +115,7 @@ test('a running group shows its counts, then after two seconds the latest comman
   expect((await draw('ph', calls, true))[0]).toBe('● Running 2 shell commands… (0s)') // the engine's gutter: a dot while it runs
   now = 2500
   const later = await draw('ph', calls, true)
-  expect(later[0]).toBe('● Reading screen for the summary') // 2.5 s: an even second, the dot is on
+  expect(later[0]).toBe('● Reading screen for the summary (2s)') // the phrase keeps its clock; 2.5 s: an even second, the dot is on
   expect(later[1]?.trim()).toBe('⎿  $ λσ') // the peek stays, in the script
   now = 4000
   expect((await draw('ph', calls, false))[0]).toBe('  Ran 2 shell commands (4s)') // done: two spaces
@@ -212,6 +212,25 @@ test('a shell group carries its own clock while it runs and when it is done', { 
   expect(await summary(true)).toBe('  Running 1 shell command… (6s)') // 7 s on the clock: odd, off
   now = 9500
   expect(await summary(false)).toBe('  Ran 1 shell command (8s)')
+})
+
+test('a running group with a live phrase keeps its clock', { options: { script: 'greek' } }, async ($, on) => {
+  let now = 1000
+  on('clock.now', async () => ({ value: now }))
+  on('clock.every', async () => ({ value: undefined }))
+  const props = {
+    isActive: true, isExpanded: false, isCallsOnly: true,
+    calls: [{ tool: 'Bash', input: { command: 'git status', description: 'git status' }, isRunning: true, isErrored: false, isInterrupted: false }],
+  }
+  const summary = async () => {
+    const ui = await $.ui.mount({ plugin: 'greek-to-me', surface: 'terminal', component: 'ToolGroup', requestId: 'clk2', props })
+    const text = (await ui.find({ type: 'Text' }))?.text
+    await ui.unmount()
+    return text
+  }
+  expect(await summary()).toBe('  Running 1 shell command… (0s)') // the clock starts, the phrase waits
+  now = 7000
+  expect(await summary()).toBe('  gitting status (6s)') // phrase and clock, not the phrase alone; 7 s: odd, the dot blinks off
 })
 
 test("a command's output is in the script, its error output stays readable", { options: { script: 'greek' } }, async ($, on) => {
